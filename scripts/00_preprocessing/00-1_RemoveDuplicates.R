@@ -31,7 +31,7 @@
 # Packages:
 #   Load and install function.
 rm(list = ls())
-renv::activate()
+# renv::activate()
 source("scripts/utils/99_TSA_customfunctions.R")
 
 
