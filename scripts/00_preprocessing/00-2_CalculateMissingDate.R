@@ -5,19 +5,25 @@
 rm(list = ls())
 renv::activate()
 library(tidyverse)
+library(dplyr)
 library(tools)   # for file_path_sans_ext
 #source("R/Code/helperfunctions.R")  # for read_data() and save_datasets()
 source("scripts/utils/helperfunctions.R")
 # ---- Configuration ----
 config <- list(
-  input_folder   = "T:/DLR/PCA-Analysis/Input/03_timeseries_8247_cor/",
-  output_folder  = "T:/DLR/PCA-Analysis/Input/04_timeseries_8247_allDates",
+  input_folder   = "T:/DLR-DFD/PCA-Analysis/Input/03_timeseries_8247_cor/",
+  output_folder  = "T:/DLR-DFD/PCA-Analysis/Input/04_timeseries_8247_allDates",
   start_date     = "2003-01-01",
   end_date       = "2024-12-31",
   output_suffix  = "_allDates",
   csv_sep        = ";",
   file_format    = "txt"
 )
+
+
+ifelse(!dir.exists(file.path(config$output_folder)),
+       dir.create(file.path(config$output_folder)),
+       "Directory Exists")
 
 # ---- Functions ----
 

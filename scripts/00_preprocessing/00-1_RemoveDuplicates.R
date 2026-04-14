@@ -30,6 +30,7 @@
 
 # Packages:
 #   Load and install function.
+rm(list = ls())
 renv::activate()
 source("scripts/utils/99_TSA_customfunctions.R")
 
@@ -42,13 +43,13 @@ source("scripts/utils/99_TSA_customfunctions.R")
 
 config <- list(
   folder_information = list(
-    timeseries_input_folder = "T:/DLR/PCA-Analysis/Input/01_timeseries_8247/",
-    timeseries_preliminary_results = "T:/DLR/PCA-Analysis/Input/02_timeseries_8247_preliminary/",
-    output_folder_for_corrected_ts = "T:/DLR/PCA-Analysis/Input/03_timeseries_8247_cor/"
+    timeseries_input_folder = "T:/DLR-DFD/PCA-Analysis/Input/01_timeseries_8247/",
+    timeseries_preliminary_results = "T:/DLR-DFD/PCA-Analysis/Input/02_timeseries_8247_preliminary/",
+    output_folder_for_corrected_ts = "T:/DLR-DFD/PCA-Analysis/Input/03_timeseries_8247_cor/"
   ),
   file_pattern = "h",  # pattern for input timeseries files
   sep = ";",
-  summary_log_file = "T:/DLR/PCA-Analysis/Input/00-1_RemoveDuplicates_summary_log.txt",
+  summary_log_file = "T:/DLR-DFD/PCA-Analysis/Input/00-1_RemoveDuplicates_summary_log.txt",
   
   analysis_information = list(
     start_year = 2003,
@@ -61,9 +62,19 @@ config <- list(
 #   Set input directory:
 ipath <- config$folder_information$timeseries_input_folder
 opath <- config$folder_information$output_folder_for_corrected_ts
-#   Set pattern of input files:
 
+ifelse(!dir.exists(file.path(config$folder_information$timeseries_preliminary_results)),
+       dir.create(file.path(config$folder_information$timeseries_preliminary_results)),
+       "Directory Exists")
+
+ifelse(!dir.exists(file.path(opath)),
+       dir.create(file.path(opath)),
+       "Directory Exists")
+       
+#   Set pattern of input files:
 pattern <- config$file_pattern
+
+
 
 
 sep = config$sep
@@ -74,7 +85,6 @@ jail <- config$folder_information$timeseries_preliminary_results  # Zwischenfold
 # Define output summary log file
 summary_file <- config$summary_log_file
 sink(summary_file, split = TRUE)  # Redirect output to both file and console
-
 ###----- 1. Input --------------------------------------------------------------
 # Get files
 fl <- list.files(path = ipath, pattern = pattern)
@@ -84,13 +94,12 @@ print(length(fl)) # 8247
 
 # read all files as dataframes  
 files <- lapply(fl, function(l) read.delim(paste0(ipath, l), header = T, sep = sep))
-files
+#files
 
 
 # Check if length more than 8037 
 
-
-add_day    <- 1  # optional, to keep your previous offset
+add_day    <- 1  
 years <- config$analysis_information$start_year :config$analysis_information$end_year
 
 # Leap years are divisible by 4 (but centuries only if divisible by 400)
@@ -146,8 +155,6 @@ cat("Files exceeding 8037 entries:", sum(sapply(files, function(x) length(x[[1]]
 
 
 # rewrite cleaned data to files
-
-
 for (l in 1:length(files)) {
   write.table(files[[l]], file = paste0(opath, fl[l]), row.names = F,
               quote = F, append = F, sep = sep)
