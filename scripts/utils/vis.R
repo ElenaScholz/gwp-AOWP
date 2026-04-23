@@ -143,6 +143,10 @@ get_most_frequent_lake_class <- function(cluster_matrices){
   ##– vermutlich um den Fall „nur ein Cluster“ als „0 Wechsel“ zu zählen.
   cluster_char[,2] <- cluster_char[,2]-1
   
+  # 20.04.2026 die 2 Zeilen unten eingefügt - es könnte sein, dass hier ein Fehler in den Seezuordnungen stattgefunden hat. 
+  cluster_char_first[,2] <- cluster_char_first[,2]-1
+  cluster_char_last[,2] <- cluster_char_last[,2]-1
+  
   return(list(
     cluster_char_total = cluster_char,
     cluster_char_first = cluster_char_first,
@@ -244,7 +248,8 @@ plot_world_map <- function(coords, cluster_vals, lake_cols, year_label,
 
 plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label, 
                                number_of_cluster, custom_par = NULL, 
-                               custom_legend = NULL, position = NULL) {
+                               custom_legend = NULL, position = NULL,
+                               label_start = 1) {
   library(sf)
   library(ggplot2)
   library(rnaturalearth)
@@ -298,7 +303,7 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
   } else {
     p <- p + scale_color_manual(
       values = lake_cols,
-      labels = paste("#",1:number_of_cluster),
+      labels = paste("#", label_start:(label_start + number_of_cluster - 1)),
       name = year_label
     ) +
       guides(color = guide_legend(ncol = 1, override.aes = list(size = 6)))
@@ -336,6 +341,28 @@ create_classification_summary <- function(cluster_char, cluster_char_first, clus
   return(classification_summary_df)
 }
 
+create_classification_summary_new <- function(cluster_char, cluster_char_first, cluster_char_last, coords, climate){
+  change_id <- rep(0, nrow(cluster_char_first))
+  recs_oi <- which(cluster_char_first[,1] != cluster_char_last[,1])
+  change_id[recs_oi] <- 1
+  
+  classification_summary_df <- data.frame(
+    x = coords['Lat'], 
+    y = coords['Lon'], 
+    ID = 1:nrow(coords),
+    LakeClass_full = cluster_char[,1],
+    LakeClass_first = cluster_char_first[,1],
+    LakeClass_last = cluster_char_last[,1],
+    LakeClass_variability_full = cluster_char[,2],
+    LakeClass_variability_first = cluster_char_first[,2],
+    LakeClass_variability_last = cluster_char_last[,2],
+    change_id = change_id,
+    KG_climate = climate$description_of_zone
+  )
+  
+  return(classification_summary_df)
+}
+
 ### 1. PDF + layout setup
 setup_pdf <- function(filename, nrows=5, ncols=2) {
   pdf(filename, paper="a4", width=9, height=13)
@@ -346,16 +373,18 @@ setup_pdf <- function(filename, nrows=5, ncols=2) {
 setup_tiff <- function(filename, nrows = 5, ncols = 2, width = 9, height = 13, res = 300) {
   # Open a TIFF graphics device
   tiff(filename, width = width, height = height, units = "in", res = res, compression = "lzw")
-  
+
   # Layout setup (same as before)
   par(mfrow = c(nrows, ncols), mar = rep(2, 4))
-  
+
   # Return same structure for compatibility
   return(list(sum_change = 0, n = 1))
 }
 
 
-plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols, cluster_char = lake_frequencies$cluster_char_total) {
+plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols, 
+                     cluster_char = lake_frequencies$cluster_char_total,
+                     cex_main = 1.5, cex_legend = 1.5, cex_label = 1.5) {
   dummy_table <- data.frame(Var1=1:ncl, Freq=rep(0,ncl))
   
   pieDAT_full <- dummy_table
@@ -365,20 +394,27 @@ plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols, cluster_char = la
   }
   
   # Erweitere Plotbereich für Legende
-  par(mar=c(1, 1, 3, 1), xpd=TRUE)
-  
-  pie(pieDAT_full$Freq, col=lake_cols, labels="",
-      main=paste(region_name, " (", length(lakes_oi), " lakes)", sep=""),
-      cex.main=1.0, font.main=2)
-  mtext(paste("(", letters[n], ")", sep=""), side=3, adj=0, cex=1.25, font=2)
-  
-  # Legende mit absoluten Koordinaten außerhalb
-  legend(x=-1.95, y=0.5, legend=1:ncl, pch=16, pt.cex=1.5,
-         col=lake_cols, ncol=2,
-         title="Class number", title.adj=.5, text.font=2, bg="ivory",
-         xpd=TRUE)
-}
+  #par(mar = c(bottom, left, top, right), xpd = allows to draw outside the plot region, plt=c(left, right, bottom, top in %))
+  par(mar=c(0, 1, 3, 1), xpd=TRUE, plt = c(0.25, 0.95, 0.1, 0.9))
 
+  pie(pieDAT_full$Freq, col=lake_cols, labels="",
+      #main=paste(region_name, " (", length(lakes_oi), " lakes)", sep=""),
+      cex.main=cex_main, font.main=4, # title font size
+      radius = 0.85)  # adjust radius to change pie size
+ 
+   # for pie
+  mtext(paste(region_name, " (", length(lakes_oi), " lakes)", sep=""), 
+        side=3, adj = 1, line=-0.25, cex=cex_main, font=3)
+  # adds subplot labels
+  mtext(paste("(", letters[n], ")", sep=""), side=3, adj=-0.25, cex=cex_label, font=3, line = -0.05) # side = top margin, adj = 0 means left aligned
+  
+  # absolute positions in plot coordinates 
+  legend(x=-2.2, y=0.7, legend=1:ncl, pch=16, pt.cex=2, col=lake_cols,
+         ncol=2, title="Class number", title.adj=.5, text.font=3,
+         bg="ivory", xpd=TRUE, cex=cex_legend)
+  
+
+}
 
 
 ### 3. Shift heatmap calculation
@@ -407,26 +443,31 @@ calc_shift_heatmap <- function(lakes_oi, ncl, mode=c("period","annual"),
 }
 
 ### 4. Heatmap plotting
-plot_shift_heatmap <- function(shift_heat_map, ncl, colors, xlab, ylab) {
+plot_shift_heatmap <- function(shift_heat_map, ncl, colors, xlab, ylab, 
+                               zlim = NULL, cex_axis = 1.0, cex_lab = 1.0, 
+                               cex_values = 1.2) {
   par(mar=c(4,4,1,4))
-  shift_cols <- colors
-  image.plot(x=1:ncl, y=1:ncl, z=t(shift_heat_map), 
-             col = shift_cols,
-             xlab="", ylab="", axes=F)
-  axis(1, at=1:ncl, lwd=2, lend=2, cex.axis=0.8, font=2, mgp=c(3,.85,0))
-  axis(2, at=1:ncl, lwd=2, lend=2, cex.axis=0.8, font=2, mgp=c(3,.85,0))
-  mtext("class changes [%]", side=4, line=.75, cex=.7, font=2)
-  mtext(xlab, side=1, line=2.2, cex=.7, font=2)
-  mtext(ylab, side=2, line=2.5, cex=.7, font=2)
+  #ar(mar=c(5,5,1,4))
+  if (is.null(zlim)) {
+    zlim <- range(shift_heat_map, na.rm = TRUE)
+  }
+  # image.plot(x=1:ncl, y=1:ncl, z=t(shift_heat_map), col=colors, 
+  #            xlab="", ylab="", axes=F, zlim=zlim)
+  image.plot(x=1:ncl, y=1:ncl, z=t(shift_heat_map), col=colors, 
+             xlab="", ylab="", axes=F, zlim=zlim,
+             xlim=c(0.5, ncl+0.5), ylim=c(0.5, ncl+0.5))
+  axis(1, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
+  axis(2, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
+  mtext("class changes [%]", side=4, line=.75, cex=cex_lab, font=2)
+  mtext(xlab, side=1, line=2.2, cex=cex_lab, font=2)
+  mtext(ylab, side=2, line=2.5, cex=cex_lab, font=2)
   box(lwd=2)
-  
   for(i in 1:nrow(shift_heat_map)){
     for(j in 1:ncol(shift_heat_map)){
-      text(x=j, y=i, labels=shift_heat_map[i,j])
+      text(x=j, y=i, labels=shift_heat_map[i,j], cex=cex_values)
     }
   }
 }
-
 
 ### Function to plot annual frequency anomalies for lake types
 # group vecotr = climate or coontinents

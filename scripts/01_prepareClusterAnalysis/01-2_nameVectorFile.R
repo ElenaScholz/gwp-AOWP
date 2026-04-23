@@ -4,7 +4,7 @@ renv::activate()
 source("scripts/utils/helperfunctions.R")  
 
 config <- list(
-  ROOT =  "T:/DLR/PCA-Analysis/Input/",
+  ROOT =  "T:/DLR-DFD/PCA-Analysis/Input/",
   input_data_folder = "03_timeseries_8247_cor",
   start_year = 2003,
   end_year = 2024
@@ -53,6 +53,6 @@ complete_name_vec <- as.data.frame(complete_name_vec)
 
 print(paste0("Number of Rows: ", length(complete_name_vec[, 1]), "   Number of Columns: ", length(complete_name_vec[1, ]), "   Number of AOIs: ", length(filepaths)))
 
-write.table(complete_name_vec, file = paste0("T:/DLR/Analysis2/PCA/indata/complete_name_vec.txt"), sep = " ", dec = ".", col.names = FALSE, row.names = FALSE)
+write.table(complete_name_vec, file = paste0("T:/DLR-DFD/PCA-Analysis/CluDat/complete_name_vec.txt"), sep = " ", dec = ".", col.names = FALSE, row.names = FALSE)
 
 

@@ -6,12 +6,12 @@ source("scripts/utils/helperfunctions.R")
 
 # ---- Configuration ----
 config <- list(
-  ROOT              = "T:/DLR/PCA-Analysis",
+  ROOT              = "T:/DLR-DFD/PCA-Analysis",
   coord_subfolder   = "Input/00_coordinates_8247",
   ts_subfolder      = "Input/05_timeseries_8247_rm2902",
   coord_suffix      = "_coordinates.txt",
   ts_suffix_pattern = "_SGV-timeseries.*\\.txt$",   # more general than hardcoding "rm2902"
-  output_folder     = "ClaDat"
+  output_folder     = "CluDat"
 )
 output_folder_path <- paste0(config$ROOT, "/", config$output_folder)
 

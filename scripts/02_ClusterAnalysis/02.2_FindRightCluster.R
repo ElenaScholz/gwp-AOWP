@@ -1,5 +1,5 @@
 rm(list=ls())
-
+renv::activate()
 library(abind)
 library(maps)
 library(sp)
@@ -10,10 +10,8 @@ library(clusterSim)
 
 # ---- Configuration ---- 
 config <- list(
-  ROOT = "T:/DLR/PCA-Analysis",
-  #path_to_helper = "C:/Users/elena/Documents/RProjects/globalLakeVariability/R/Code/helperfunctions.R",
+  ROOT = "T:/DLR-DFD/PCA-Analysis",
   folder_and_files = list(
-    
     input_normalized_lake_mat = "CluDatOutput/CLA_DAT_full.dat",
     folder_for_cnts = "CluDat/cla_runs/kmn_",
     data_separator = ""
@@ -131,7 +129,7 @@ for (l in 2:15) {
     iter.max = 200, nstart = 10  )
   eukl_dist[[l]] <- eucl_kmeans_assignments
   
-  write.table(eucl_kmeans_assignments, paste0("T:/DLR/PCA-Analysis/CluDatOutput/kmns_cla/kmns_cla_",l,".txt"), sep = "",
+  write.table(eucl_kmeans_assignments, paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/kmns_cla/kmns_cla_",l,".txt"), sep = "",
               row.names = FALSE, col.names = FALSE)
   
   
@@ -152,34 +150,6 @@ for (l in 2:15) {
 k <- 10
 
 # drei Cluster-Zuweisungen laden
-eucl_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_eucl_cla/eucl_cla_", k, ".txt"))[,1])
-kmns_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_kmns_cla/kmns_cla_v4_", k, ".txt"))[,1])
-mnh_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_mnh_cla/mnh_cla_", k, ".txt"))[,1])
-
-# Unterschiede berechnen (wie im Original)
-print("Unterschiede zwischen den Methoden:")
-print(paste("Euclidean vs k-means:", length(which(eucl_assignments != kmns_assignments))/length(eucl_assignments)*100, "%"))
-print(paste("Euclidean vs Manhattan:", length(which(eucl_assignments != mnh_assignments))/length(eucl_assignments)*100, "%"))
-print(paste("k-means vs Manhattan:", length(which(kmns_assignments != mnh_assignments))/length(kmns_assignments)*100, "%"))
-
-
-library(ggplot2)
-# Plots (wie im Original)
-par(mfrow=c(1,3))
-
-# Euclidean vs k-means
-# Dann plotten:
-plot(eucl_assignments, kmns_assignments, pch=19, col="blue")
-abline(0,1, col="red")
-
-title("Euclidean vs k-means")
-
-# Euclidean vs Manhattan  
-plot(x=eucl_assignments, y=mnh_assignments, type="p", pch=5, col="green",
-     main="Euclidean vs Manhattan", xlab="Euclidean", ylab="Manhattan")
-abline(0,1, col="red")
-
-# k-means vs Manhattan
-plot(x=kmns_assignments, y=mnh_assignments, type="p", pch=5, col="orange",
-     main="k-means vs Manhattan", xlab="k-means", ylab="Manhattan")
-abline(0,1, col="red")
+#eucl_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_eucl_cla/eucl_cla_", k, ".txt"))[,1])
+#kmns_assignments <- as.numeric(read.table(paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/kmns_cla/kmns_cla_", k, ".txt"))[,1])
+#mnh_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_mnh_cla/mnh_cla_", k, ".txt"))[,1])

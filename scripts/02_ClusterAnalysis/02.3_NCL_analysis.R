@@ -12,7 +12,7 @@ library(clusterSim)
 
 # ---- Configuration ---- 
 config <- list(
-  ROOT = "T:/DLR/PCA-Analysis",
+  ROOT = "T:/DLR-DFD/PCA-Analysis",
   distance_metric = "euclidean", # or manhattan
   folder_and_files = list(
     
@@ -282,7 +282,9 @@ plot_cluster_metrics_noKL <- function(exvs, fsil, db, filename) {
 # Main-Skript
 # =========================================
 cla_dat_path = paste0(config$ROOT,"/", config$folder_and_files$input_normalized_lake_mat)
-CLA_DAT <- load_input_matrix(cla_dat_path, sep = "")
+CLA_DAT <- load_input_matrix(cla_dat_path
+                             #, sep = ""
+                             )
 
 # Vorbereitung
 results <- vector("list", 15)
@@ -317,11 +319,11 @@ db <- as.numeric(sapply(results[2:15], `[[`, "db"))
 
 
 if (config$distance_metric == "euclidean"){
-  filename <- paste0("T:/DLR/PCA-Analysis/CluDatOutput/plots/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
+  filename <- paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/plots/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
   plot_cluster_metrics_noKL(exvs, fsil, db,filename)
   
 }else {
-  filename <- paste0("T:/DLR/PCA-Analysis/CluDatOutput/plots/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
+  filename <- paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/plots/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
   plot_cluster_metrics(exvs, fsil, db, KL,filename)}
 
 cat("Alle Berechnungen abgeschlossen. PDF gespeichert:", filename, "\n")

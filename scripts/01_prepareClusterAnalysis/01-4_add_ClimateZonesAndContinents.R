@@ -3,20 +3,19 @@
 
 
 
-# NOTE: h09v07_9798_1 lies in the waterarea of koeppen-geiger and therefore needs to be classified manually
+# NOTE: h09v07_9798_1 lies in the water-area of koeppen-geiger and therefore needs to be classified manually
 # =============================
 rm(list=ls())
-
-
+renv::activate()
 library(sf)
 library(dplyr)
 
 # ---- Configuration ----
 config <- list(
-  gpkg_file        = "T:/DLR/PCA-Analysis/gwp_HylaksWithClimateZone.gpkg",
-  coords_file      = "T:DLR/PCA-Analysis/CluDat/all_coordinates_complete.txt",
-  output_climate   = "T:DLR/PCA-Analysis/CluDat/Points_Climate.txt",
-  output_location  = "T:DLR/PCA-Analysis/CluDat/Points_Cont.txt",
+  gpkg_file        = "T:/DLR-DFD/PCA-Analysis/gwp_HylaksWithClimateZone.gpkg",
+  coords_file      = "T:/DLR-DFD/PCA-Analysis/CluDat/all_coordinates_complete.txt",
+  output_climate   = "T:/DLR-DFD/PCA-Analysis/CluDat/Points_Climate.txt",
+  output_location  = "T:/DLR-DFD/PCA-Analysis/CluDat/Points_Cont.txt",
   coord_id_column  = "prefix_id",   # ID column in coords file
   gpkg_id_column   = "id",          # ID column in gpkg
   gpkg_lat_column  = "latitude",    # may adapt if naming changes

@@ -15,8 +15,7 @@ library(ggsci)
 source("scripts/utils/helperfunctions.R")
 source("scripts/utils/vis.R")
 config <- list(
-  ROOT = "T:/DLR/PCA-Analysis/",
- # path_to_helpers = "C:/Users/elena/Documents/RProjects/globalLakeVariability/R/Code/helperfunctions.R",
+  ROOT = "T:/DLR-DFD/PCA-Analysis/",
   input_datasets = list(
     climate_dataset =  "CluDat/Points_Climate.txt",
     continents_dataset = "CluDat/Points_Cont.txt",
@@ -290,8 +289,9 @@ dev.off()
 breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5, max(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)+.5)
 
 lake_cols_var <- rgb(lake_cols_list$ramp_dev(seq(0, 1, length = length(breaks_var)-1)), max = 255)
-
-
+lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(10)
+lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
+lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
 # pdf(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_Class_variability_full.pdf"),
 #     width = config$plotting_information$pdf_size$width,
 #     height = config$plotting_information$pdf_size$height_small)
@@ -307,13 +307,14 @@ plot(0,0,type="n",xlim=c(-180,180),ylim=c(-60,90),axes=FALSE,
 
 pos_map <- c(0, 1, 0,1)  # Untere Grenze von 3.5 auf 4.5
 
+
 plot_world_map_rob(coords = coords, 
                cluster_vals = lake_frequencies$cluster_char_total[,2],
                lake_cols = lake_cols_var,
                year_label = "variability",
                number_of_cluster = length(unique(lake_frequencies$cluster_char_total[,2])),
-               position = pos_map
-               #custom_par = par(mar=rep(2,4))
+               position = pos_map,
+               label_start = 0
                )
 
 dev.off()
@@ -321,8 +322,14 @@ dev.off()
 
 # ---- Write Classification Summary ----
 
-
+# 20.04.2026 the file does not contain all information , therefore new function added (_new)
 classification_summary_df <- create_classification_summary(cluster_char = lake_frequencies$cluster_char_total,
+                                                           cluster_char_first = lake_frequencies$cluster_char_first,
+                                                           cluster_char_last = lake_frequencies$cluster_char_last,
+                                                           coords = coords,
+                                                           climate = climate)
+
+classification_summary_df_new <- create_classification_summary_new(cluster_char = lake_frequencies$cluster_char_total,
                                                            cluster_char_first = lake_frequencies$cluster_char_first,
                                                            cluster_char_last = lake_frequencies$cluster_char_last,
                                                            coords = coords,
@@ -332,15 +339,22 @@ write.table(classification_summary_df,
             file=paste0(config$ROOT , "/", config$output_directories$for_data,"/KMN_LakeClass_results.txt"),
             row.names=FALSE,col.names=TRUE,quote=FALSE, append = FALSE)
 
+write.table(classification_summary_df_new,
+            file=paste0(config$ROOT , "/", config$output_directories$for_data,"/KMN_LakeClass_results_new.txt"),
+            row.names=FALSE,col.names=TRUE,quote=FALSE, append = FALSE)
+
+
 # ---- Plot Lake Changes first and second period ----
 # 
 # pdf(paste0(config$ROOT, "/", config$output_directories$for_plots,"/Class_change_1vs2.pdf"),
 #     width=config$plotting_information$pdf_size$width, 
 #     height=config$plotting_information$pdf_size$height_small)
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/Class_change_1vs2.tiff"),
+
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/Class_change_1vs2_lajolla.tiff"),
     width=config$plotting_information$pdf_size$width, 
     height=config$plotting_information$pdf_size$height_small,
     units = "in", res = 300)
+
 # Colors for class changes
 lake_cla_diff <- lake_frequencies$cluster_char_first[,1] - lake_frequencies$cluster_char_last[,1]
 breaks_var <- seq(-9.5, 9.5, by = 1)
@@ -368,7 +382,7 @@ pos_map <- c(0, 1, 0, 1)
 plot_world_map_rob(coords = coords_filtered,
                    cluster_vals = cluster_vals_filtered,
                    lake_cols = lake_cols_var[c(1:9, 11:19)],  # Ohne NA
-                   year_label = "rel. class change",
+                   year_label = "rel. type change",
                    number_of_cluster = length(custom_legend$labels),
                    custom_par = par(mar = rep(2,4)),
                    custom_legend = custom_legend,
@@ -379,64 +393,165 @@ dev.off()
 # ---- Pie Charts changes of climate regions between first and second period ----
 source("scripts/utils/vis.R")
 
+# pdf_climate <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_ClimateZones_leg-y07cex-05mtext.tiff"), nrows = length(unique(climate$description_of_zone)), ncols = 2)
+# state <- list(sum_change = 0, n = 1)
+# # for (i in unique(climate$description_of_zone)){
+# #   lakes_oi <- which(climate$description_of_zone==i)
+# #   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
+# #   shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
+# #   plot_shift_heatmap(shift_heat_map, ncl, colors = colorRampPalette(heatmap_colors$lake_cols)(100), "lake type, 2014 - 2024", "lake type, 2003 - 2013")
+# #   state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+# #   state$n <- state$n + 1
+# # }
+# 
+# # Compute global zlim across all climate zones
+# all_shifts <- list()
+# for (i in unique(climate$description_of_zone)){
+#   lakes_oi <- which(climate$description_of_zone == i)
+#   all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
+# }
+# global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
+# 
+# # Then plot with consistent scale
+# for (i in unique(climate$description_of_zone)){
+#   lakes_oi <- which(climate$description_of_zone == i)
+#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
+#   plot_shift_heatmap(all_shifts[[i]], ncl, 
+#                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
+#                      "lake type, 2014 - 2024", "lake type, 2003 - 2013",
+#                      zlim = global_zlim)
+#   state$n <- state$n + 1
+# }
+# 
+# dev.off()
+# 
+# # ---- Pie Charts changes of continents between first and second period ----
+# pdf_continent <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_Continents.tiff"), nrows = length(unique(continents$continent)), ncols = 2)
+# state <- list(sum_change = 0, n = 1)
+# for(i in unique(continents$continent)){
+#   lakes_oi <- which(continents$continent==i)
+#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
+#   shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
+#   plot_shift_heatmap(shift_heat_map, ncl, colors = colorRampPalette(heatmap_colors$lake_cols)(100), "lake type, 2014 - 2024", "lake type, 2003 - 2013")
+#   state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+#   state$n <- state$n + 1
+# }
+# 
+# dev.off()
+# 
+# # ---- Pie Chart Climate Zones annual ----
+# year1 <- 2003
+# year2 <- 2004
+# tiff_pie_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_climates.tiff",sep=""),  nrows = length(unique(climate$description_of_zone)), ncols = 2)
+# state <- list(sum_change = 0, n = 1)
+# for(i in unique(climate$description_of_zone)){
+#   lakes_oi <- which(climate$description_of_zone==i)
+#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
+#   shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
+#   plot_shift_heatmap(shift_heat_map, ncl,colors = colorRampPalette(heatmap_colors$lake_cols)(100), paste("lake type,", year2), paste("lake type,", year1))
+#   state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+#   state$n <- state$n + 1
+# }
+# 
+# dev.off()
+# 
+# # ---- Pie Chart Continents Annual ----
+# pdf_continent_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_continents.tiff",sep=""),nrows = length(unique(continents$continent)), ncols = 2)
+# state <- list(sum_change = 0, n = 1)
+# 
+# for(i in unique(continents$continent)){
+#   lakes_oi <- which(continents$continent==i)
+#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
+#   shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
+#   plot_shift_heatmap(shift_heat_map, ncl, colors = colorRampPalette(heatmap_colors$lake_cols)(100), paste("lake type,", year2), paste("lake type,", year1))
+#   state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+#   state$n <- state$n + 1
+# }
+# 
+# dev.off()
+
+
+# ---- Pie Charts changes of climate regions between first and second period ----
 pdf_climate <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_ClimateZones.tiff"), nrows = length(unique(climate$description_of_zone)), ncols = 2)
 state <- list(sum_change = 0, n = 1)
+all_shifts <- list()
 for (i in unique(climate$description_of_zone)){
-  lakes_oi <- which(climate$description_of_zone==i)
+  lakes_oi <- which(climate$description_of_zone == i)
+  all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
+}
+global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
+for (i in unique(climate$description_of_zone)){
+  lakes_oi <- which(climate$description_of_zone == i)
   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
-  shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
-  plot_shift_heatmap(shift_heat_map, ncl, colors = colorRampPalette(heatmap_colors$lake_cols)(100), "lake type, 2012 - 2024", "lake type, 2003 - 2011")
-  state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+  plot_shift_heatmap(all_shifts[[i]], ncl, 
+                     colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
+                     "lake type, 2014 - 2024", "lake type, 2003 - 2013",
+                     zlim = global_zlim)
   state$n <- state$n + 1
 }
-
 dev.off()
 
 # ---- Pie Charts changes of continents between first and second period ----
 pdf_continent <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_Continents.tiff"), nrows = length(unique(continents$continent)), ncols = 2)
 state <- list(sum_change = 0, n = 1)
-for(i in unique(continents$continent)){
-  lakes_oi <- which(continents$continent==i)
+all_shifts <- list()
+for (i in unique(continents$continent)){
+  lakes_oi <- which(continents$continent == i)
+  all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
+}
+global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
+for (i in unique(continents$continent)){
+  lakes_oi <- which(continents$continent == i)
   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
-  shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
-  plot_shift_heatmap(shift_heat_map, ncl, colors = colorRampPalette(heatmap_colors$lake_cols)(100), "lake type, 2012 - 2024", "lake type, 2003 - 2011")
-  state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+  plot_shift_heatmap(all_shifts[[i]], ncl, 
+                     colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
+                     "lake type, 2014 - 2024", "lake type, 2003 - 2013",
+                     zlim = global_zlim)
   state$n <- state$n + 1
 }
-
 dev.off()
 
 # ---- Pie Chart Climate Zones annual ----
 year1 <- 2003
 year2 <- 2004
-tiff_pie_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_climates.tiff",sep=""),  nrows = length(unique(climate$description_of_zone)), ncols = 2)
+tiff_pie_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_climates.tiff",sep=""), nrows = length(unique(climate$description_of_zone)), ncols = 2)
 state <- list(sum_change = 0, n = 1)
-for(i in unique(climate$description_of_zone)){
-  lakes_oi <- which(climate$description_of_zone==i)
+all_shifts <- list()
+for (i in unique(climate$description_of_zone)){
+  lakes_oi <- which(climate$description_of_zone == i)
+  all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
+}
+global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
+for (i in unique(climate$description_of_zone)){
+  lakes_oi <- which(climate$description_of_zone == i)
   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
-  shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
-  plot_shift_heatmap(shift_heat_map, ncl,colors = colorRampPalette(heatmap_colors$lake_cols)(100), paste("lake type,", year2), paste("lake type,", year1))
-  state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+  plot_shift_heatmap(all_shifts[[i]], ncl, 
+                     colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
+                     paste("lake type,", year2), paste("lake type,", year1),
+                     zlim = global_zlim)
   state$n <- state$n + 1
 }
-
 dev.off()
 
 # ---- Pie Chart Continents Annual ----
-pdf_continent_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_continents.tiff",sep=""),nrows = length(unique(continents$continent)), ncols = 2)
+pdf_continent_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_continents.tiff",sep=""), nrows = length(unique(continents$continent)), ncols = 2)
 state <- list(sum_change = 0, n = 1)
-
-for(i in unique(continents$continent)){
-  lakes_oi <- which(continents$continent==i)
+all_shifts <- list()
+for (i in unique(continents$continent)){
+  lakes_oi <- which(continents$continent == i)
+  all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
+}
+global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
+for (i in unique(continents$continent)){
+  lakes_oi <- which(continents$continent == i)
   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
-  shift_heat_map <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
-  plot_shift_heatmap(shift_heat_map, ncl, colors = colorRampPalette(heatmap_colors$lake_cols)(100), paste("lake type,", year2), paste("lake type,", year1))
-  state$sum_change <- state$sum_change + sum(shift_heat_map, na.rm=TRUE)
+  plot_shift_heatmap(all_shifts[[i]], ncl, 
+                     colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
+                     paste("lake type,", year2), paste("lake type,", year1),
+                     zlim = global_zlim)
   state$n <- state$n + 1
 }
-
 dev.off()
-
 # ---- Plot Annual Distribution Heatmaps ----
 plot_annual_distribution(
   group_vector = climate$description_of_zone,

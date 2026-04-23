@@ -45,16 +45,16 @@ source("scripts/utils/helperfunctions.R")
 
 config <- list(
   # The overall working directory this file is then set to
-  working_dir = "T:/DLR/PCA-Analysis/",
+  working_dir = "T:/DLR-DFD/PCA-Analysis/",
   # The overall input folder containing all datasets for the cluster analysis - (all files generated in the 00.X_Scripts)
-  input_folder   = "T:/DLR/PCA-Analysis/CluDat", #"T:/DLR/Analysis2/Input/GWP/03_timeseries_8247_cor/",
+  input_folder   = "T:/DLR-DFD/PCA-Analysis/CluDat", #"T:/DLR/Analysis2/Input/GWP/03_timeseries_8247_cor/",
   
   # Information needed to read the lake area file and write the output
   normalizing_lakes = list(
     # The file name of the Area file generated in Script 00.4 -> IMPORTANT use the one with the sample information (called _withPrefix.txt)
     area_file = "area_combination_withPrefix.txt",
     # the folder where the final normalized dataset will ne stored
-    output_folder  = "T:/DLR/PCA-Analysis/CluDatOutput",
+    output_folder  = "T:/DLR-DFD/PCA-Analysis/CluDatOutput",
     # the name of the files (one with and one without the Metadata / Prefixes)
     normalized_lake_area = "CLA_DAT_full.dat",
     normalized_lake_area_with_MetaData = "CLA_DAT_full_withMetaData.dat",

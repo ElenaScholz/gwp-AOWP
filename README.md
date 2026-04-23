@@ -78,12 +78,14 @@ For further help, see the [renv documentation](https://rstudio.github.io/renv/ar
 
 # Preprocessing
 Preprocessing transforms the raw timeseries data into ready to use time series for further analyses.
+
 ## Information for all three Scripts
 1. To start the preprocessing use the three scripts given within the 00_prerpocessing folder. 
 2. Use the scripts in the right order (1-3)
 3. check the paths given in the configuration section at the top of the code
 4. make sure to name the folder with the GWP timeseries like this: 01_timeseries_8247 - or change it consistently through out the entire analyses
 5. change the absolute paths for output folders to match your directoy
+
 
 ## 00-1_RemoveDuplicates.R
 This Scripts checks if a lake is located on two MODIS tiles - If yes it removes the duplicated time series and recalculates the areas for each date. 
@@ -99,3 +101,65 @@ Outputfolder: 04_timeseries_8247_allDates
 This Script removes the 29.02 from all leap years. 
 Inputfolder: 04_timeseries_8247_allDates
 Outputfolder: 05_timeseries_8247_rm2902
+
+# Preparation of Cluster Analysis
+## 01-1_RestructureTimeSeries.R
+
+Reads all SGV timeseries files from the input directory and produces four
+aggregated output tables — a daily and a monthly version, each available
+with and without metadata identifiers.
+
+### What it does
+
+| Step | Description |
+|---|---|
+| Load | Reads all `*_SGV-timeseries_allDates_rm2902.txt` files from the input folder |
+| Validate | Warns if files differ in row count (= mismatched date ranges) |
+| Daily | Reshapes each timeseries into a **year × day-of-year** matrix |
+| Monthly | Averages each timeseries within months → **year × 12** matrix |
+| Export | Writes four space-separated `.txt` files to `ClaDat/` |
+
+### Input
+
+- **Location:** `input/05_timeseries_8247_rm2902/`
+- **Format:** Semicolon-separated `.txt` files with columns `Date` (YYYY-MM-DD) and `Area`
+- **Naming convention:** `<prefix_id>_SGV-timeseries_allDates_rm2902.txt`
+
+### Output
+
+All files are written to `CluDat/`, space-separated, decimal point `.`.
+
+| File | Contents |
+|---|---|
+| `area_combination.txt` | Daily matrix — values only, no headers |
+| `area_combination_withPrefix.txt` | Daily matrix — with `prefix_id` and `Year` columns |
+| `area_combination_month.txt` | Monthly average matrix — values only, no headers |
+| `area_combination_month_withPrefix.txt` | Monthly average matrix — with `prefix_id` and `Year` columns |
+
+### Configuration
+
+All paths and filename patterns are set at the top of the script in the `config` list.
+Adjust `ROOT` and subfolder paths before running.
+
+```r
+config <- list(
+  ROOT              = "your/folder/PCA-Analysis/",
+  ts_subfolder      = "input/05_timeseries_8247_rm2902/",
+  ...
+)
+```
+
+### Dependencies
+
+- `renv` (environment managed via `renv.lock` — run `renv::restore()` on first use)
+- `scripts/utils/helperfunctions.R` — provides `read_data()`
+
+### Notes
+
+- The monthly aggregation uses the **arithmetic mean** across all days within each month (`na.rm = TRUE`)
+- The `prefix_id` is extracted from each filename by stripping the suffix pattern — ensure filenames follow the expected convention
+- If files have unequal row counts, a warning is printed but processing continues; check for date range mismatches in the input data
+
+## Scripts 2 to 4: 
+These Scripts reshape the time series and coordinate files in a proper format for Cluster Analysis. 
+They also add Climate Zone and Continent information to the Scripts.
