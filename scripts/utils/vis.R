@@ -404,9 +404,9 @@ plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols,
  
    # for pie
   mtext(paste(region_name, " (", length(lakes_oi), " lakes)", sep=""), 
-        side=3, adj = 1, line=-0.25, cex=cex_main, font=3)
+        side=3, adj = 0.6, line=-0.25, cex=cex_main, font=2)
   # adds subplot labels
-  mtext(paste("(", letters[n], ")", sep=""), side=3, adj=-0.25, cex=cex_label, font=3, line = -0.05) # side = top margin, adj = 0 means left aligned
+  mtext(paste("(", letters[n], ")", sep=""), side=3, adj=-0.25, cex=cex_label, font=2, line = -0.05) # side = top margin, adj = 0 means left aligned
   
   # absolute positions in plot coordinates 
   legend(x=-2.2, y=0.7, legend=1:ncl, pch=16, pt.cex=2, col=lake_cols,

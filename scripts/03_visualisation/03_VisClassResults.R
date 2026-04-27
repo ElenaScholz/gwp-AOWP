@@ -470,9 +470,11 @@ source("scripts/utils/vis.R")
 # 
 # dev.off()
 
+source("scripts/utils/vis.R")
 
 # ---- Pie Charts changes of climate regions between first and second period ----
-pdf_climate <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_ClimateZones.tiff"), nrows = length(unique(climate$description_of_zone)), ncols = 2)
+pdf_climate <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_ClimateZones.tiff"), 
+                          nrows = length(unique(climate$description_of_zone)), ncols = 2)
 state <- list(sum_change = 0, n = 1)
 all_shifts <- list()
 for (i in unique(climate$description_of_zone)){
@@ -482,7 +484,7 @@ for (i in unique(climate$description_of_zone)){
 global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
 for (i in unique(climate$description_of_zone)){
   lakes_oi <- which(climate$description_of_zone == i)
-  plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
+  plot_pie(lakes_oi, i, state$n, ncl, lake_cols, cex_main = 1.0)
   plot_shift_heatmap(all_shifts[[i]], ncl, 
                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
                      "lake type, 2014 - 2024", "lake type, 2003 - 2013",
