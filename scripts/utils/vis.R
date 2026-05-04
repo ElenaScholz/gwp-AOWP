@@ -408,7 +408,7 @@ plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols,
   
   legend(x=legend_x, y=legend_y, legend=1:ncl, pch=16, pt.cex=legend_pt_cex, 
          col=lake_cols, ncol=2, title="Class number", title.adj=.5, 
-         text.font=3, bg="ivory", xpd=TRUE, cex=cex_legend)
+         text.font=2, bg="ivory", xpd=TRUE, cex=cex_legend)
 }
 
 plot_shift_heatmap <- function(shift_heat_map, ncl, colors, xlab, ylab, 
@@ -434,7 +434,31 @@ plot_shift_heatmap <- function(shift_heat_map, ncl, colors, xlab, ylab,
   }
 }
 
-
+calc_shift_heatmap <- function(lakes_oi, ncl, mode = c("period", "annual"), 
+                               year1 = NULL, year2 = NULL, 
+                               cluster_char_list = lake_frequencies, 
+                               cluster_dist_list = cluster_matrices) {
+  shift_heat_map <- matrix(0, ncol = ncl, nrow = ncl)
+  cluster_char_first <- cluster_char_list$cluster_char_first
+  cluster_char_last <- cluster_char_list$cluster_char_last
+  cluster_dist <- cluster_dist_list$full
+  
+  for (i in 1:ncl) {
+    for (j in 1:ncl) {
+      if (mode == "period") {
+        last_oi <- which(cluster_char_first[lakes_oi, 1] == i &
+                           cluster_char_last[lakes_oi, 1] == j)
+      } else if (mode == "annual") {
+        last_oi <- which(cluster_dist[lakes_oi, year1 - 2002] == i &
+                           cluster_dist[lakes_oi, year2 - 2002] == j)
+      }
+      shift_heat_map[i, j] <- shift_heat_map[i, j] + length(last_oi)
+      if (i == j) { shift_heat_map[i, j] <- NA }
+    }
+  }
+  shift_heat_map <- round(shift_heat_map / length(lakes_oi) * 100, 1)
+  return(shift_heat_map)
+}
 # 
 # plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols, 
 #                      cluster_char = lake_frequencies$cluster_char_total,
