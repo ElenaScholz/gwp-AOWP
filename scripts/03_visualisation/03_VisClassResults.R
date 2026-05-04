@@ -159,7 +159,7 @@ lake_frequencies <- get_most_frequent_lake_class(cluster_matrices = cluster_matr
 
 time_axis <- get_time_axis()
 
-
+source('scripts/utils/vis.R')
 # ---- Create plot for Class Results whole time series ---- 
 # create pdf
 tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_Class_results_full.tif"),
@@ -196,7 +196,7 @@ pos_map <- c(0, 1, 4.0/40.42, 13.5/15.42)  # Untere Grenze von 3.5 auf 4.5
 plot_world_map_rob(coords = coords,
                    cluster_vals = lake_frequencies$cluster_char_total[,1],
                    lake_cols = lake_cols_list$lake_cols,
-                   year_label = "lake types",
+                   year_label = "Lake cluster",
                    number_of_cluster = ncl,
                    position = pos_map
                    )
@@ -260,7 +260,7 @@ for (year in seq(start_year, end_year)) {
   plot_world_map_rob(coords,
                  cluster_vals = cluster_matrices$full[, year-start_year+1],
                  lake_cols = lake_cols_list$lake_cols, 
-                 year_label = paste("lake types:", year), 
+                 year_label = paste("Lake cluster:", year), 
                  number_of_cluster =  ncl,
                  position = pos_map)
   
@@ -310,8 +310,8 @@ pos_map <- c(0, 1, 0,1)  # Untere Grenze von 3.5 auf 4.5
 
 plot_world_map_rob(coords = coords, 
                cluster_vals = lake_frequencies$cluster_char_total[,2],
-               lake_cols = lake_cols_var,
-               year_label = "variability",
+               lake_cols = lake_cols_var_lajolla,
+               year_label = "Variability",
                number_of_cluster = length(unique(lake_frequencies$cluster_char_total[,2])),
                position = pos_map,
                label_start = 0
@@ -381,8 +381,8 @@ pos_map <- c(0, 1, 0, 1)
 # Plot mit gefilterten Daten
 plot_world_map_rob(coords = coords_filtered,
                    cluster_vals = cluster_vals_filtered,
-                   lake_cols = lake_cols_var[c(1:9, 11:19)],  # Ohne NA
-                   year_label = "rel. type change",
+                   lake_cols = lake_cols_var_lajolla[c(1:9, 11:19)],  # Ohne NA
+                   year_label = "rel. Cluster change",
                    number_of_cluster = length(custom_legend$labels),
                    custom_par = par(mar = rep(2,4)),
                    custom_legend = custom_legend,

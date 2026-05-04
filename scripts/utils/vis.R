@@ -173,7 +173,7 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
   
   # Empty plot
   plot(0,0,type="n", xlim=range(x_recs), ylim=c(0,1),
-       xlab="", ylab="", axes=FALSE, main=paste("type #", cla, sep=""),
+       xlab="", ylab="", axes=FALSE, main=paste("Cluster #", cla, sep=""),
        cex.main=2, cex.axis=1.5)
   
   # Hintergrundfarbe hinzufügen (falls gewünscht)
