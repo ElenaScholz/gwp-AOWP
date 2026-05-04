@@ -111,7 +111,7 @@ reorganize_cluster_assignments <- function(clas, n_lakes, n_years) {
 }
 
 # cluster_char
-get_most_frequent_lake_class <- function(cluster_matrices){
+get_most_frequent_lake_Cluster <- function(cluster_matrices){
   cluster_char <- matrix(NaN,nrow=nrow(cluster_matrices$full),ncol=2)
   cluster_char_first <- matrix(NaN,nrow=nrow(cluster_matrices$full),ncol=2)
   cluster_char_last <- matrix(NaN,nrow=nrow(cluster_matrices$full),ncol=2)  
@@ -126,8 +126,8 @@ get_most_frequent_lake_class <- function(cluster_matrices){
     lake_count_first <- as.data.frame(table(cluster_matrices$first_period[i,]))
     lake_count_last <- as.data.frame(table(cluster_matrices$second_period[i,]))
     
-    ## classify lakes by max class assignement 
-    ## Hier wird die am häufigsten auftretende Klasse (Cluster) gewählt → „Dominant Class“ eines Sees.
+    ## Clusterify lakes by max Cluster assignement 
+    ## Hier wird die am häufigsten auftretende Klasse (Cluster) gewählt → „Dominant Cluster“ eines Sees.
     cluster_char[i,1] <- as.integer(as.vector(lake_count_total$Var1[which(lake_count_total$Freq==max(lake_count_total$Freq))[1]]))
     cluster_char_first[i,1] <- as.integer(as.vector(lake_count_first$Var1[which(lake_count_first$Freq==max(lake_count_first$Freq))[1]]))
     cluster_char_last[i,1] <- as.integer(as.vector(lake_count_last$Var1[which(lake_count_last$Freq==max(lake_count_last$Freq))[1]]))
@@ -407,7 +407,7 @@ plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols,
         side=3, adj=label_adj, cex=cex_label, font=2, line=label_line)
   
   legend(x=legend_x, y=legend_y, legend=1:ncl, pch=16, pt.cex=legend_pt_cex, 
-         col=lake_cols, ncol=2, title="Class number", title.adj=.5, 
+         col=lake_cols, ncol=2, title="Cluster", title.adj=.5, 
          text.font=2, bg="ivory", xpd=TRUE, cex=cex_legend)
 }
 
@@ -423,7 +423,7 @@ plot_shift_heatmap <- function(shift_heat_map, ncl, colors, xlab, ylab,
              xlim=c(0.5, ncl+0.5), ylim=c(0.5, ncl+0.5))
   axis(1, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
   axis(2, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
-  mtext("class changes [%]", side=4, line=.75, cex=cex_lab, font=2)
+  mtext("Cluster changes [%]", side=4, line=.75, cex=cex_lab, font=2)
   mtext(xlab, side=1, line=2.2, cex=cex_lab, font=2)
   mtext(ylab, side=2, line=2.5, cex=cex_lab, font=2)
   box(lwd=2)
@@ -488,7 +488,7 @@ calc_shift_heatmap <- function(lakes_oi, ncl, mode = c("period", "annual"),
 #   
 #   # absolute positions in plot coordinates 
 #   legend(x=-2.2, y=0.7, legend=1:ncl, pch=16, pt.cex=2, col=lake_cols,
-#          ncol=2, title="Class number", title.adj=.5, text.font=3,
+#          ncol=2, title="Cluster number", title.adj=.5, text.font=3,
 #          bg="ivory", xpd=TRUE, cex=cex_legend)
 #   
 # 
@@ -536,7 +536,7 @@ calc_shift_heatmap <- function(lakes_oi, ncl, mode = c("period", "annual"),
 #              xlim=c(0.5, ncl+0.5), ylim=c(0.5, ncl+0.5))
 #   axis(1, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
 #   axis(2, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
-#   mtext("class changes [%]", side=4, line=.75, cex=cex_lab, font=2)
+#   mtext("Cluster changes [%]", side=4, line=.75, cex=cex_lab, font=2)
 #   mtext(xlab, side=1, line=2.2, cex=cex_lab, font=2)
 #   mtext(ylab, side=2, line=2.5, cex=cex_lab, font=2)
 #   box(lwd=2)
@@ -606,7 +606,7 @@ plot_annual_distribution <- function(group_vector, group_name,
     title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1)
     mtext("year", side=1, line=2.2, cex=.8, font=2)
     mtext("frequency anomaly", side=4, line=.9, cex=.8, font=2)
-    mtext("class #", side=2, line=2.5, cex=.8, font=2)
+    mtext("Cluster #", side=2, line=2.5, cex=.8, font=2)
     
     # Add counts to heatmap
     for(n in 1:ncl){

@@ -1,13 +1,13 @@
 rm(list=ls())
 renv::activate()
 library(dplyr)
-all_statistics <-"T:/DLR-all_stats_df_subsetD/all_stats_df_subsetD-GWPComparison/Results_10percDisr/Results_10percDisr/all_stats_all_stats_df_subset.csv" 
+all_statistics <-"T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/all_stats_df.csv" 
 
-all_stats_all_stats_df_subset <- read.csv(all_statistics, header = TRUE, sep = ",")
-all_stats_all_stats_df_subset_subset <- all_stats_all_stats_df_subset %>%
+all_stats_df <- read.csv(all_statistics, header = TRUE, sep = ",")
+all_stats_df_subset <- all_stats_df %>%
   filter(Dataset != "Li") %>% 
   mutate(Dataset = recode(Dataset, "Li_no_frozen" = "LSE", "NASAFlood" = "MFP", "Arlie" = "ARLIE" ))
-glimpse(all_stats_all_stats_df_subset) 
+glimpse(all_stats_df_subset) 
 
 library(ggplot2)
 
@@ -19,8 +19,8 @@ facet_labels <- c(
   "Area-perc" = "Area [%]",
   "Area-normalized" = "Area [z-score]"
 )
-p_spearman <- ggplot(all_stats_all_stats_df_subset_subset %>% filter(value.type == "Area-perc"), aes(x = spearman_cor, color = Dataset)) +
-  stat_ecall_stats_df_subset(linewidth = 0.8) +
+p_spearman <- ggplot(all_stats_df_subset %>% filter(value.type == "Area-perc"), aes(x = spearman_cor, color = Dataset)) +
+stat_ecdf(linewidth = 0.8) +
   scale_color_manual(values = dataset_colors) +
   scale_y_continuous(
     breaks = seq(0, 1, 0.1),
@@ -35,8 +35,8 @@ p_spearman <- ggplot(all_stats_all_stats_df_subset_subset %>% filter(value.type 
 p_spearman
 
 # --- ECall_stats_df_subset: RMSE ---
-p_rmse <- ggplot(all_stats_all_stats_df_subset_subset %>% filter(RMSE > 0), aes(x = RMSE, color = Dataset)) +
-  stat_ecall_stats_df_subset(linewidth = 0.8) +
+p_rmse <- ggplot(all_stats_df_subset %>% filter(RMSE > 0), aes(x = RMSE, color = Dataset)) +
+  stat_ecdf(linewidth = 0.8) +
   facet_wrap(~value.type, labeller = labeller(value.type = facet_labels), scales = "free_x") +
   scale_x_log10() +
   scale_color_manual(values = dataset_colors) +
@@ -61,10 +61,10 @@ p_combined <- p_spearman / p_rmse +
   theme(legend.position = "bottom")
 p_combined
 # --- Save ---
-ggsave("T:/DLR-all_stats_df_subsetD/all_stats_df_subsetD-GWPComparison/Results_10percDisr/Results_10percDisr/ecall_stats_df_subset_validation.png", p_combined, width = 8, height = 7, dpi = 300)
+ggsave("T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/ecdf_validation.png", p_combined, width = 8, height = 7, dpi = 300)
 
 
-summary <- all_stats_all_stats_df_subset_subset %>%
+summary <- all_stats_df_subset %>%
   group_by(Dataset, value.type) %>%
   summarise(
     median_cor = median(spearman_cor, na.rm = TRUE),
@@ -77,7 +77,7 @@ summary <- all_stats_all_stats_df_subset_subset %>%
   )
 summary
 
-spearman_interpretation <- all_stats_all_stats_df_subset_subset %>%
+spearman_interpretation <- all_stats_df_subset %>%
   filter(value.type == "Area-perc") %>%
   group_by(Dataset) %>%
   summarise(
@@ -86,7 +86,7 @@ spearman_interpretation <- all_stats_all_stats_df_subset_subset %>%
   )
 spearman_interpretation
 
-rmse_perc <- all_stats_all_stats_df_subset_subset %>%
+rmse_perc <- all_stats_df_subset %>%
   filter(value.type == "Area-perc") %>%
   group_by(Dataset) %>%
   summarise(
@@ -99,7 +99,7 @@ rmse_perc <- all_stats_all_stats_df_subset_subset %>%
 
 rmse_perc
 
-rmse_zscore <- all_stats_all_stats_df_subset_subset %>%
+rmse_zscore <- all_stats_df_subset %>%
   filter(value.type == "Area-normalized") %>%
   group_by(Dataset) %>%
   summarise(

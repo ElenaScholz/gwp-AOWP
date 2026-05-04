@@ -435,12 +435,13 @@ for (i in unique(climate$description_of_zone)){
   all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
 }
 global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
+
 for (i in unique(climate$description_of_zone)){
   lakes_oi <- which(climate$description_of_zone == i)
   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
   plot_shift_heatmap(all_shifts[[i]], ncl, 
                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-                     "lake type, 2014 - 2024", "lake type, 2003 - 2013",
+                     "Cluster type, 2014 - 2024", "Cluster type, 2003 - 2013",
                      zlim = global_zlim)
   state$n <- state$n + 1
 }
@@ -474,7 +475,7 @@ for (i in unique(continents$continent)){
            mar = cont_pie_settings$mar)
   plot_shift_heatmap(all_shifts[[i]], ncl, 
                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-                     "lake type, 2014 - 2024", "lake type, 2003 - 2013",
+                     "Cluster type, 2014 - 2024", "Cluster type, 2003 - 2013",
                      zlim = global_zlim,
                      cex_axis = cont_heatmap_settings$cex_axis,
                      cex_lab = cont_heatmap_settings$cex_lab,
@@ -501,7 +502,7 @@ for (i in unique(climate$description_of_zone)){
   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
   plot_shift_heatmap(all_shifts[[i]], ncl, 
                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-                     paste("lake type,", year2), paste("lake type,", year1),
+                     paste("Cluster type,", year2), paste("Cluster type,", year1),
                      zlim = global_zlim)
   state$n <- state$n + 1
 }
@@ -535,7 +536,7 @@ for (i in unique(continents$continent)){
            mar = cont_pie_settings$mar)
   plot_shift_heatmap(all_shifts[[i]], ncl, 
                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-                     paste("lake type,", year2), paste("lake type,", year1),
+                     paste("Cluster type,", year2), paste("Cluster type,", year1),
                      zlim = global_zlim,
                      cex_axis = cont_heatmap_settings$cex_axis,
                      cex_lab = cont_heatmap_settings$cex_lab,
