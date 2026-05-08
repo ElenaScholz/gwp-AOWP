@@ -171,3 +171,100 @@ summary_table <- summary_table %>%
          median_rmse_z, iqr_rmse_z)
 
 View(summary_table)
+
+library(ggplot2)
+library(dplyr)
+
+# --- Data ---
+data <- tribble(
+  ~Dataset,   ~Start1,       ~End1,         ~Start2,       ~End2,
+  "GWP",      "01.01.2003",  "31.12.2024",  NA,            NA,
+  "ARLIE",    "01.09.2016",  "01.04.2025",  "01.09.2016",  "31.12.2024",
+  "LSE",      "01.01.2001",  "31.12.2023",  "01.01.2003",  "31.12.2023",
+  "NRT-FP",   "01.01.2010",  "31.12.2025",  "01.01.2010",  "31.12.2010",
+  "NRT-FP",   "01.01.2010",  "31.12.2025",  "01.01.2021",  "31.12.2021"
+)
+
+parse_date <- function(x) as.Date(x, format = "%d.%m.%Y")
+data <- data |>
+  mutate(across(c(Start1, End1, Start2, End2), parse_date))
+
+# --- Colors ---
+ds_colors <- c(ARLIE = "#72B6A1", LSE = "#95A3C3", `NRT-FP` = "#E99675")
+
+datasets  <- c("ARLIE", "LSE", "NRT-FP")
+y_pos     <- setNames(seq_along(datasets) - 1, datasets)
+
+gwp <- data |> filter(Dataset == "GWP")
+
+light_segs <- data |>
+  filter(Dataset != "GWP") |>
+  group_by(Dataset) |>
+  summarise(xmin = min(Start1), xmax = max(End1), .groups = "drop") |>
+  mutate(y = y_pos[Dataset], color = ds_colors[Dataset])
+
+dark_segs <- data |>
+  filter(Dataset != "GWP", !is.na(Start2), !is.na(End2)) |>
+  mutate(y = y_pos[Dataset], color = ds_colors[Dataset])
+
+x_breaks <- seq(as.Date("2000-01-01"), as.Date("2026-01-01"), by = "year")
+
+# --- Plot ---
+p <- ggplot() +
+  # GWP grey background
+  annotate("rect",
+    xmin = gwp$Start1, xmax = gwp$End1,
+    ymin = -Inf, ymax = Inf,
+    fill = "lightgrey", alpha = 0.4
+  ) +
+  # Vertical grid lines (white, visible on grey GWP background)
+  geom_vline(xintercept = x_breaks, linetype = "dashed",
+             color = "white", linewidth = 0.3) +
+  # Horizontal dashed lines per dataset
+  geom_hline(yintercept = y_pos, linetype = "dashed",
+             color = "grey50", linewidth = 0.3) +
+  # Light segments (full coverage)
+  geom_segment(
+    data = light_segs,
+    aes(x = xmin, xend = xmax, y = y, yend = y, color = Dataset),
+    linewidth = 8, alpha = 0.3, lineend = "butt"
+  ) +
+  # Dark segments (used periods)
+  geom_segment(
+    data = dark_segs,
+    aes(x = Start2, xend = End2, y = y, yend = y, color = Dataset),
+    linewidth = 8, alpha = 1.0, lineend = "butt"
+  ) +
+  # Dataset labels on y-axis (instead of legend)
+  scale_y_continuous(
+    breaks = y_pos,
+    labels = names(y_pos),
+    expand = expansion(add = 0.5)
+  ) +
+  scale_color_manual(values = ds_colors, guide = "none") +
+  scale_x_date(
+    breaks = x_breaks,
+    date_labels = "%Y",
+    limits = range(x_breaks)
+  ) +
+  labs(
+    x = "Year",
+    y = NULL,
+    title = "Temporal Data Coverage (2000–2025)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    text          = element_text(color = "black"),
+    axis.text     = element_text(color = "black"),
+    axis.text.x   = element_text(angle = 45, hjust = 1, color = "black"),
+    axis.title    = element_text(color = "black", face = "bold"),
+    plot.title    = element_text(hjust = 0.5, color = "black", face = "bold"),
+    panel.grid    = element_blank(),
+    panel.border  = element_rect(color = "black", fill = NA, linewidth = 0.6),
+    legend.position = "none"
+  )
+
+
+
+p
+ggsave("T:/DLR-DFD/PlotsForPaper/temporal_coverage.png", plot = p, width = 16, height = 4.2, units = "cm", dpi = 300)
