@@ -1,18 +1,21 @@
 rm(list=ls())
 renv::activate()
 library(dplyr)
-all_statistics <-"T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/all_stats_df.csv" 
+all_statistics <-"T:/DLR-DFD/Analysis3/Results_10percDisrMay2026/all_stats_df.csv" 
+
 
 all_stats_df <- read.csv(all_statistics, header = TRUE, sep = ",")
+unique(all_stats_df$Dataset)
 all_stats_df_subset <- all_stats_df %>%
-  filter(Dataset != "Li") %>% 
-  mutate(Dataset = recode(Dataset, "Li_no_frozen" = "LSE", "NASAFlood" = "MFP", "Arlie" = "ARLIE" ))
+  filter(Dataset != "Li_no_frozen") %>% 
+  mutate(Dataset = recode(Dataset, "Li-strict" = "LSE", "NASAFlood" = "NRT-FP", "Arlie" = "ARLIE" ))
+unique(all_stats_df_subset$Dataset)
 glimpse(all_stats_df_subset) 
 
 library(ggplot2)
 
 # define colors for each dataset
-dataset_colors <- c("ARLIE" = "#E69F00", "LSE" = "#56B4E9", "MFP"="#009E73")
+dataset_colors <- c("ARLIE" = "#E69F00", "LSE" = "#56B4E9", "NRT-FP"="#009E73")
 
 # facet labels
 facet_labels <- c(
@@ -110,7 +113,6 @@ rmse_zscore <- all_stats_df_subset %>%
     q75_rmse = quantile(RMSE, 0.75)
   )
 rmse_zscore
-
 # --- Compute all metrics ---
 # Correlation thresholds (only need one value.type since they're identical)
 cor_stats <- all_stats_df_subset %>%
@@ -135,6 +137,15 @@ rmse_perc_stats <- all_stats_df_subset %>%
     prop_below_10 = round(mean(RMSE < 10) * 100, 1)
   )
 
+# Standard deviations
+sd_stats <- all_stats_df_subset %>%
+  filter(value.type == "Area-perc") %>%
+  group_by(Dataset) %>%
+  summarise(
+    median_gwp_sd = round(median(gwp_stdev, na.rm = TRUE), 2),
+    median_val_sd = round(median(val_stdev, na.rm = TRUE), 2)
+  )
+
 # RMSE z-score
 rmse_z_stats <- all_stats_df_subset %>%
   filter(value.type == "Area-normalized") %>%
@@ -145,14 +156,9 @@ rmse_z_stats <- all_stats_df_subset %>%
   )
 
 # --- Combine into one table ---
-# Add temporal resolution
-temp_res <- data.frame(
-  Dataset = c("ARLIE", "LSE", "MFP"),
-  temp_resolution = c("daily", "monthly", "daily")
-)
-
 summary_table <- cor_stats %>%
   left_join(rmse_perc_stats, by = "Dataset") %>%
+  left_join(sd_stats, by = "Dataset") %>%
   left_join(rmse_z_stats, by = "Dataset") %>%
   left_join(temp_res, by = "Dataset")
 
@@ -161,6 +167,7 @@ summary_table <- summary_table %>%
   select(Dataset, n, temp_resolution,
          median_cor, prop_above_0.5, prop_above_0.7, prop_negative,
          median_rmse_perc, iqr_rmse_perc, prop_below_5, prop_below_10,
+         median_gwp_sd, median_val_sd,
          median_rmse_z, iqr_rmse_z)
 
-print(summary_table)
+View(summary_table)
