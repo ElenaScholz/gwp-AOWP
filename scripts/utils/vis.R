@@ -167,54 +167,197 @@ get_time_axis <- function(){
 
 plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas, 
                              normalized_lake_dat, centroids, lake_colors,
-                             bg_color = NULL, bg_alpha = 1){
+                             bg_color = NULL, bg_alpha = 1, 
+                             mar = c(3.5, 2.5, 2, 1),
+                             show_x_ticks = TRUE,
+                             show_x_title = FALSE,
+                             show_y_label = TRUE,
+                             show_class_percentage = TRUE){
   
-  par(fig=position, mar=c(4,4,3,1), new=TRUE)
+  par(fig = position, mar = mar, new = TRUE)
   
-  # Empty plot
-  plot(0,0,type="n", xlim=range(x_recs), ylim=c(0,1),
-       xlab="", ylab="", axes=FALSE, main=paste("Cluster #", cla, sep=""),
-       cex.main=2, cex.axis=1.5)
+  # # Empty plot
+  # plot(0, 0,
+  #      type = "n",
+  #      xlim = range(x_recs),
+  #      ylim = c(0,1),
+  #      xlab = "",
+  #      ylab = "",
+  #      axes = FALSE,
+  #      main = paste("AOWP ", cla, sep=""),
+  #      cex.main = 1.2,
+  #      cex.axis = 1.1)
   
-  # Hintergrundfarbe hinzufügen (falls gewünscht)
+  plot(0, 0,
+       type = "n",
+       xlim = range(x_recs),
+       ylim = c(0,1),
+       xlab = "",
+       ylab = "",
+       axes = FALSE,
+       cex.axis = 1.1)
+  
+  
+  class_n <- sum(clas == cla)
+  class_percentage <- 100 * class_n / length(clas)
+  
+  # Title
+  mtext(
+    paste0("AOWP ", cla),
+    side = 3,
+    line = 1.0,
+    cex = 1.2,
+    font = 2
+  )
+  
+  # Percentage underneath title
+  mtext(
+    paste0(round(class_percentage, 1), "% of water bodies"),
+    side = 3,
+    line = 0.1,
+    cex = 0.85,
+    font = 1,
+    col = "grey45"
+  )
+  
+  # Background
   if (!is.null(bg_color)) {
-    # Erstelle Farbe mit Transparenz
+    
     bg_col_with_alpha <- adjustcolor(bg_color, alpha.f = bg_alpha)
     
-    # Zeichne Rechteck über gesamte Plot-Fläche
-    rect(xleft = par("usr")[1], 
+    rect(xleft = par("usr")[1],
          ybottom = par("usr")[3],
-         xright = par("usr")[2], 
+         xright = par("usr")[2],
          ytop = par("usr")[4],
-         col = bg_col_with_alpha, 
+         col = bg_col_with_alpha,
          border = NA)
   }
   
-  # Axes
-  axis(1, at=x_ticks, labels=FALSE, lwd=1.5, lend=2, tcl=0.6)
-  axis(3, at=x_ticks, labels=FALSE, lwd=1.5, lend=2, tcl=0.6)
-  axis(1, at=x_labs, labels=format(x_labs, "%m"), las=3,
-       mgp=c(3,0.5,0), tcl=0, cex.axis=1.1, font.axis=2)
   
-  axis(2, at=seq(0,1,.25), labels=TRUE, lwd=1.5, lend=2, tcl=0.6,
-       cex.axis=1.1, font.axis=2)
-  axis(4, at=seq(0,1,.25), labels=FALSE, lwd=1.5, lend=2, tcl=0.6)
+  # Axis frame
+  axis(1,
+       at = x_ticks,
+       labels = FALSE,
+       lwd = 1.5,
+       lend = 2,
+       tcl = 0.4)
   
-  mtext("Month of year", side=1, line=2.5, cex=1.5, font=2)
-  mtext("rel. lake extent", side=2, line=2.5, cex=1.5, font=2)
-  box(lwd=1.5)
+  axis(3,
+       at = x_ticks,
+       labels = FALSE,
+       lwd = 1.5,
+       lend = 2,
+       tcl = 0.4)
   
-  # Shaded ±SD band and mean line
+  axis(4,
+       at = seq(0,1,0.25),
+       labels = FALSE,
+       lwd = 1.5,
+       lend = 2,
+       tcl = 0.4)
+  
+  
+  # Month numbers
+  if (show_x_ticks) {
+    
+    axis(1,
+         at = x_labs,
+         labels = format(x_labs, "%m"),
+         las = 3,
+         mgp = c(3,0.5,0),
+         tcl = 0,
+         cex.axis = 1.0,
+         font.axis = 2)
+  }
+  
+  
+  # Month title only where desired
+  if (show_x_title) {
+    
+    mtext("Month of year",
+          side = 1,
+          line = 2.8,
+          cex = 1.2,
+          font = 2)
+  }
+  
+  
+  # Y-axis labels only selected panels
+  if (show_y_label) {
+    
+    axis(2,
+         at = seq(0,1,0.25),
+         labels = TRUE,
+         lwd = 1.5,
+         lend = 2,
+         tcl = 0.4,
+         cex.axis = 1.0,
+         font.axis = 2)
+    
+    mtext("rel. lake extent",
+          side = 2,
+          line = 2.2,
+          cex = 1.2,
+          font = 2)
+    
+  } else {
+    
+    axis(2,
+         at = seq(0,1,0.25),
+         labels = FALSE,
+         lwd = 1.5,
+         lend = 2,
+         tcl = 0.4)
+  }
+  
+  
+  box(lwd = 1.5)
+  
+  
+  # # Class percentage
+  # if (show_class_percentage) {
+  #   
+  #   class_n <- sum(clas == cla)
+  #   class_percentage <- class_n / length(clas) * 100
+  #   
+  #   mtext(
+  #     paste0("n = ", class_n,
+  #            " (", round(class_percentage,1), "%)"),
+  #     side = 1,
+  #     line = 4.0,
+  #     cex = 0.8,
+  #     font = 2
+  #   )
+  # }
+  # 
+  
+  # SD envelope
   lakes_oi <- which(clas == cla)
-  lakes_sd <- apply(normalized_lake_dat[lakes_oi,], 2, sd)
   
-  lake_range_pos <- pmin(cnts[,cla] + lakes_sd, 1)
-  lake_range_neg <- pmax(cnts[,cla] - lakes_sd, 0)
+  lakes_sd <- apply(
+    normalized_lake_dat[lakes_oi,],
+    2,
+    sd
+  )
   
-  polygon(x=c(x_recs, rev(x_recs)),
-          y=c(lake_range_pos, rev(lake_range_neg)),
-          col="grey", border=NA)
-  lines(x=x_recs, y=cnts[,cla], col=lake_cols[cla], lwd=4, lend=2)
+  lake_range_pos <- pmin(centroids[,cla] + lakes_sd, 1)
+  lake_range_neg <- pmax(centroids[,cla] - lakes_sd, 0)
+  
+  
+  polygon(
+    x = c(x_recs, rev(x_recs)),
+    y = c(lake_range_pos, rev(lake_range_neg)),
+    col = "grey",
+    border = NA
+  )
+  
+  lines(
+    x = x_recs,
+    y = centroids[,cla],
+    col = lake_colors[cla],
+    lwd = 4,
+    lend = 2
+  )
 }
 
 plot_world_map <- function(coords, cluster_vals, lake_cols, year_label,
@@ -303,7 +446,7 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
   } else {
     p <- p + scale_color_manual(
       values = lake_cols,
-      labels = paste("#", label_start:(label_start + number_of_cluster - 1)),
+      labels = paste("AOWP ", label_start:(label_start + number_of_cluster - 1)),
       name = year_label
     ) +
       guides(color = guide_legend(ncol = 1, override.aes = list(size = 6)))
