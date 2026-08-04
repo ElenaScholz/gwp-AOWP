@@ -310,65 +310,6 @@ dev.off()
 
 
 
-# ---- Create Worldmap for all years ---- 
-# pdf(paste0(config$ROOT ,"/", config$output_directories$for_plots,"/03_Class_results_annual.pdf"),
-#     width=config$plotting_information$pdf_size$width, 
-#     height=config$plotting_information$pdf_size$height_large)
-
-tiff(paste0(config$ROOT ,"/", config$output_directories$for_plots,"/03_Class_results_annual.tiff"),
-    width=config$plotting_information$pdf_size$width, 
-    height=config$plotting_information$pdf_size$height_large, units = "in", res = 300)
-
-for (year in seq(start_year, end_year)) {
-  
-  if (year > start_year) par(new=FALSE)
-  plot(0,0,type="n", xlim=c(0,365), ylim=c(0,1), xlab="", ylab="", axes=FALSE)
-  
-  # Top row (classes 1–5)
-  for (cla in 1:5) {
-    pos <- c(0+.2*(cla-1), 0.2+.2*(cla-1), (10.42+5)/20.42, 1)
-    
-    plot_class_panel(cla = cla, 
-                     position = pos, 
-                     x_recs = time_axis$x_records, 
-                     x_ticks = time_axis$x_ticks, 
-                     x_labs = time_axis$x_labs,
-                     clas = clas, 
-                     normalized_lake_dat = normalized_lake_dat, 
-                     centroids = cnts, 
-                     lake_colors = lake_cols_list$lake_cols,
-                     bg_color = "white",
-                     bg_alpha = 1)
-  }
-  
-  # Middle row (map)
-  pos_map <- c(0, 1, 4.0/40.42, 13.5/15.42)  # Untere Grenze von 3.5 auf 4.5
-  
-  plot_world_map_rob(coords,
-                 cluster_vals = cluster_matrices$full[, year-start_year+1],
-                 lake_cols = lake_cols_list$lake_cols, 
-                 year_label = paste("Lake cluster:", year), 
-                 number_of_cluster =  ncl,
-                 position = pos_map)
-  
-  # Bottom row (classes 6–10)
-  for (cla in 6:10) {
-    pos <- c(0+.2*(cla-6), 0.2+.2*(cla-6), 0, 5/20.42)
-    plot_class_panel(cla = cla,
-                     position = pos,
-                     x_recs = time_axis$x_records,
-                     x_ticks = time_axis$x_ticks,
-                     x_labs = time_axis$x_labs,
-                     clas = clas , 
-                     normalized_lake_dat = normalized_lake_dat, 
-                     centroids =  cnts, 
-                     lake_colors = lake_cols_list$lake_cols,
-                     bg_color = "white",
-                     bg_alpha = 1)
-  }
-}
-
-dev.off()
 
 # ---- Plot Lake Variability ----
 
