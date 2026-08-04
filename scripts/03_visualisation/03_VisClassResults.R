@@ -180,9 +180,9 @@ tiff(
 )
 
 
-# ----------------------------------------------------
-# Base canvas
-# ----------------------------------------------------
+
+# ------------------- Base canvas -------------------
+
 
 plot(
   0,0,
@@ -195,9 +195,8 @@ plot(
 )
 
 
-# ------------------------------
-# A heading
-# ------------------------------
+# ------------------- A heading -------------------
+
 
 par(fig=c(0,1,0.92,1), new=TRUE, mar=c(0,0,0,0))
 
@@ -237,9 +236,8 @@ for (cla in 1:5) {
 
 
 
-# ----------------------------------------------------
-# Bottom row: clusters 6-10
-# ----------------------------------------------------
+
+# ------------------- Bottom row: clusters 6-10 -------------------
 
 for (cla in 6:10) {
   
@@ -268,9 +266,9 @@ for (cla in 6:10) {
 
 
 
-# ------------------------------
-# B heading
-# ------------------------------
+
+# ------------------- B heading -------------------
+
 
 par(fig=c(0,1,0.49,0.53), new=TRUE, mar=c(0,0,0,0))
 
@@ -282,9 +280,8 @@ text(0.03, 0.5,
      "B  Global Distribution of Dominant AOWPs",
      adj=c(0,0.5), cex=1.8, font=2)
 
-# ----------------------------------------------------
-# Map
-# ----------------------------------------------------
+
+# ------------------- Map -------------------
 
 pos_map <- c(
   0,
@@ -307,6 +304,76 @@ plot_world_map_rob(
 
 dev.off()
 
+
+
+# ------ PLOT ANNUAL RESULTS ------
+tiff(paste0(config$ROOT ,"/", config$output_directories$for_plots,"/03_NL_Class_results_annual.tiff"),
+     width=config$plotting_information$pdf_size$width,
+     height=config$plotting_information$pdf_size$height_large, units = "in", res = 300)
+
+for (year in seq(start_year, end_year)) {
+  
+  # Fresh page + reset fig region for each year
+  par(fig = c(0,1,0,1), new = FALSE, mar = c(0,0,0,0))
+  plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
+       axes=FALSE, xlab="", ylab="")
+  
+  # ---- A heading ----
+  par(fig=c(0,1,0.92,1), new=TRUE, mar=c(0,0,0,0))
+  plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
+       xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+  text(0.03, 0.5,
+       "A  Annual Open Surface Water Patterns (AOWPs)",
+       adj=c(0,0.5), cex=1.8, font=2)
+  
+  # ---- Top row: clusters 1-5 ----
+  for (cla in 1:5) {
+    pos <- c(0.03 + 0.19*(cla-1), 0.03 + 0.19*cla, 0.74, 0.92)
+    plot_class_panel(
+      cla = cla, position = pos,
+      x_recs = time_axis$x_records, x_ticks = time_axis$x_ticks, x_labs = time_axis$x_labs,
+      clas = clas, normalized_lake_dat = normalized_lake_dat, centroids = cnts,
+      lake_colors = lake_cols,
+      bg_color="white", mar=c(3.5,2.5,2.5,1),
+      show_x_ticks=TRUE, show_x_title=FALSE, show_y_label=(cla==1), show_class_percentage=TRUE
+    )
+  }
+  
+  # ---- Bottom row: clusters 6-10 ----
+  for (cla in 6:10) {
+    pos <- c(0.03 + 0.19*(cla-6), 0.03 + 0.19*(cla-5), 0.54, 0.72)
+    plot_class_panel(
+      cla = cla, position = pos,
+      x_recs = time_axis$x_records, x_ticks = time_axis$x_ticks, x_labs = time_axis$x_labs,
+      clas = clas, normalized_lake_dat = normalized_lake_dat, centroids = cnts,
+      lake_colors = lake_cols,
+      bg_color="white", mar=c(4.5,2.5,2.5,1),
+      show_x_ticks=TRUE, show_x_title=TRUE, show_y_label=(cla==6), show_class_percentage=TRUE
+    )
+  }
+  
+  # ---- B heading (year-specific) ----
+  par(fig=c(0,1,0.49,0.53), new=TRUE, mar=c(0,0,0,0))
+  plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
+       xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+  text(0.03, 0.5,
+       paste0("B  Distribution of AOWPs — ", year),
+       adj=c(0,0.5), cex=1.8, font=2)
+  
+  # ---- Map ----
+  pos_map <- c(0, 1, 0, 0.49)
+  plot_world_map_rob(
+    coords,
+    cluster_vals = cluster_matrices$full[, year-start_year+1],
+    lake_cols = lake_cols_list$lake_cols,
+    year_label = paste("AOWP:", year),
+    number_of_cluster = ncl,
+    position = pos_map
+  )
+}
+
+
+dev.off()
 
 
 
