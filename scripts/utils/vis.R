@@ -206,7 +206,7 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
     paste0("AOWP ", cla),
     side = 3,
     line = 1.0,
-    cex = 1.2,
+    cex = 1.5,
     font = 2
   )
   
@@ -215,9 +215,9 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
     paste0(round(class_percentage, 1), "% of water bodies"),
     side = 3,
     line = 0.1,
-    cex = 0.85,
+    cex = 1.15,
     font = 1,
-    col = "grey45"
+    col = "grey35"
   )
   
   # Background
@@ -294,7 +294,7 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
          cex.axis = 1.0,
          font.axis = 2)
     
-    mtext("rel. lake extent",
+    mtext("rel. extent",
           side = 2,
           line = 2.2,
           cex = 1.2,
@@ -427,13 +427,24 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
     coord_sf(expand = FALSE)+
     theme_void() +
     theme(
-      legend.position = c(0.05, 0.5),
-      legend.background = element_rect(fill = "white", color = "white", linewidth = 1),
+      legend.position = "inside",
+      legend.position.inside = c(0.00, 0.5),
+      legend.justification = c(0, 0.5),
+      legend.background = element_rect(fill = "white", color = "grey35", linewidth = 0.6),
+      legend.margin = margin(6, 10, 6, 10),
       legend.title = element_text(face = "bold", hjust = 0.5, size = 20),
-      legend.text = element_text(face = "bold", size = 18),
+      legend.text = element_text(face = "plain", size = 18),
       legend.key.size = unit(2.75, "lines"),
-      legend.key = element_rect(fill = "white")
+      legend.key = element_rect(fill = "white", color = NA)
     )
+    # theme(
+    #   legend.position = c(0.05, 0.5),
+    #   legend.background = element_rect(fill = "white", color = "white", linewidth = 1),
+    #   legend.title = element_text(face = "bold", hjust = 0.5, size = 20),
+    #   legend.text = element_text(face = "bold", size = 18),
+    #   legend.key.size = unit(2.75, "lines"),
+    #   legend.key = element_rect(fill = "white")
+    # )
   
   # Add color scale
   if (!is.null(custom_legend)) {
