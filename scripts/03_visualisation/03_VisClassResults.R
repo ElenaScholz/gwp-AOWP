@@ -160,69 +160,7 @@ lake_frequencies <- get_most_frequent_lake_Cluster(cluster_matrices = cluster_ma
 time_axis <- get_time_axis()
 
 source('scripts/utils/vis.R')
-
-# 
-# # ---- Create plot for Class Results whole time series ---- 
-# # create pdf
-# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_Class_results_full.tif"),
-#     width = config$plotting_information$pdf_size$width,
-#     height = config$plotting_information$pdf_size$height_large, units = "in", res = 300)
-# 
-# # empty base plot for layout reference
-# plot(0, 0, type="n", xlim=c(0,365), ylim=c(0,1), xlab="", ylab="", axes=FALSE)
-# 
-# ## --- Top row (classes 1–5) - weniger Platz ---
-# # for (cla in 1:5) {
-# #   pos <- c(0+.2*(cla-1), 0.2+.2*(cla-1), (12+5)/20.42, 1)  # Von 12 auf 13
-# 
-# for (cla in 1:5) {
-#   pos <- c(0+.2*(cla-1), 0.2+.2*(cla-1), (10.42+5)/20.42, 1)
-#   
-#   
-#   plot_class_panel(cla = cla, 
-#                    position = pos, 
-#                    x_recs = time_axis$x_records, 
-#                    x_ticks = time_axis$x_ticks, 
-#                    x_labs = time_axis$x_labs,
-#                    clas = clas, 
-#                    normalized_lake_dat = normalized_lake_dat, 
-#                    centroids = cnts, 
-#                    lake_colors = lake_cols_list$lake_cols,
-#                    bg_color = "white",
-#                    bg_alpha = 1)
-# }
-# 
-# 
-# ## --- Middle row (world map) ---
-# pos_map <- c(0, 1, 4.0/40.42, 13.5/15.42)  # Untere Grenze von 3.5 auf 4.5
-# plot_world_map_rob(coords = coords,
-#                    cluster_vals = lake_frequencies$cluster_char_total[,1],
-#                    lake_cols = lake_cols_list$lake_cols,
-#                    year_label = "Lake cluster",
-#                    number_of_cluster = ncl,
-#                    position = pos_map
-#                    )
-# 
-# ## --- Bottom row (classes 6–10) - bleibt gleich ---
-# for (cla in 6:10) {
-# #  pos <- c(0+.2*(cla-6), 0.2+.2*(cla-6), 0, 3.5/20.42)
-#   pos <- c(0+.2*(cla-6), 0.2+.2*(cla-6), 0, 5/20.42)
-#   
-#     plot_class_panel(cla = cla, 
-#                    position = pos, 
-#                    x_recs = time_axis$x_records, 
-#                    x_ticks = time_axis$x_ticks, 
-#                    x_labs = time_axis$x_labs,
-#                    clas = clas, 
-#                    normalized_lake_dat = normalized_lake_dat, 
-#                    centroids = cnts, 
-#                    lake_colors = lake_cols,
-#                    bg_color = "white",
-#                    bg_alpha = 1)
-# 
-# }
-# 
-# dev.off()
+ 
 
 # ---- NEW LAYOUT: Create plot for Class Results whole time series ---- 
 # create pdf
