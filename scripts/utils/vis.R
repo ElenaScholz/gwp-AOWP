@@ -398,6 +398,7 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
   library(rnaturalearth)
   library(rnaturalearthdata)
   library(grid)
+  library(ggtext)
   
   # Get world map
   world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
@@ -430,10 +431,10 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
       legend.position = "inside",
       legend.position.inside = c(0.00, 0.5),
       legend.justification = c(0, 0.5),
-      legend.background = element_rect(fill = "white", color = "grey35", linewidth = 0.6),
+      legend.background = element_rect(fill = "white", color = "white", linewidth = 0.6),
       legend.margin = margin(6, 10, 6, 10),
-      legend.title = element_text(face = "bold", hjust = 0.5, size = 20),
-      legend.text = element_text(face = "plain", size = 18),
+      legend.title = ggtext::element_markdown(hjust = 0, size = 16, lineheight = 1.2),
+      legend.text  = ggtext::element_markdown(size = 18, lineheight = 1.1),
       legend.key.size = unit(2.75, "lines"),
       legend.key = element_rect(fill = "white", color = NA)
     )

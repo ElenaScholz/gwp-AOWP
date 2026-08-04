@@ -376,44 +376,65 @@ for (year in seq(start_year, end_year)) {
 dev.off()
 
 
-
+source('scripts/utils/vis.R')
 
 # ---- Plot Lake Variability ----
 
 # Adjustments of Colorbar
-breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5, max(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)+.5)
+breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5,
+                  max(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)+.5)
 
 lake_cols_var <- rgb(lake_cols_list$ramp_dev(seq(0, 1, length = length(breaks_var)-1)), max = 255)
 lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(10)
 lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
 lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
-# pdf(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_Class_variability_full.pdf"),
-#     width = config$plotting_information$pdf_size$width,
-#     height = config$plotting_information$pdf_size$height_small)
 
-
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_Class_variability_full.tiff"),
-    width = config$plotting_information$pdf_size$width,
-    height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.NL_Class_variability_full.tiff"),
+     width = config$plotting_information$pdf_size$width,
+     height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
 
 plot(0,0,type="n",xlim=c(-180,180),ylim=c(-60,90),axes=FALSE,
      yaxs="i",xaxs="i",xlab="",ylab="",cex.axis=1.5)
 
+pos_map <- c(0, 1, 0, 1)
 
-pos_map <- c(0, 1, 0,1)  # Untere Grenze von 3.5 auf 4.5
+var_vals <- sort(unique(lake_frequencies$cluster_char_total[,2]))
 
+# --- Long title: bold (3 lines) + plain smaller subtitle (2 lines) ---
+title_var <- paste0(
+  "<span style='font-size:16pt'>",
+  "**Number of additional different<br>",
+  "AOWPs classified<br>",
+  "per water body**",
+  "</span><br>",
+  "<span style='font-size:13pt;font-weight:normal'>",
+  "(beyond the dominant AOWP<br>",
+  "over the 22-year period)",
+  "</span>"
+)
 
-plot_world_map_rob(coords = coords, 
-               cluster_vals = lake_frequencies$cluster_char_total[,2],
-               lake_cols = lake_cols_var_lajolla,
-               year_label = "Variability",
-               number_of_cluster = length(unique(lake_frequencies$cluster_char_total[,2])),
-               position = pos_map,
-               label_start = 0
-               )
+# --- Labels: first (0) and last (max) get 2-line descriptions, rest are plain numbers ---
+lab_fun <- function(v) {
+  if (v == 0)                return("0 (no additional AOWP;<br>same AOWP all 22 years)")
+  if (v == max(var_vals))    return(paste0(v, " (", v, " additional<br>AOWPs observed)"))
+  as.character(v)
+}
+custom_labels <- vapply(var_vals, lab_fun, character(1))
+
+custom_legend_var <- list(
+  labels = custom_labels,
+  colors = lake_cols_var_lajolla[seq_along(var_vals)]
+)
+
+plot_world_map_rob(coords = coords,
+                   cluster_vals = lake_frequencies$cluster_char_total[,2],
+                   lake_cols = lake_cols_var_lajolla,
+                   year_label = title_var,
+                   number_of_cluster = length(var_vals),
+                   custom_legend = custom_legend_var,
+                   position = pos_map)
 
 dev.off()
-
 
 # ---- Write Classification Summary ----
 
