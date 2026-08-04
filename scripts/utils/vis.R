@@ -392,7 +392,7 @@ plot_world_map <- function(coords, cluster_vals, lake_cols, year_label,
 plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label, 
                                number_of_cluster, custom_par = NULL, 
                                custom_legend = NULL, position = NULL,
-                               label_start = 1) {
+                               label_start = 1, white_world = FALSE) {
   library(sf)
   library(ggplot2)
   library(rnaturalearth)
@@ -421,11 +421,22 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
   # Transform points to Robinson
   points_robin <- sf::st_transform(points_sf, crs = "+proj=robin")
   
-  # Create plot
+  # Fill/border depending on white_world
+  if (white_world) {
+    world_fill   <- "white"
+    world_border <- "grey40"
+    world_lwd    <- 0.3
+  } else {
+    world_fill   <- "gray80"
+    world_border <- "gray90"
+    world_lwd    <- 0.2
+  }
+  
   p <- ggplot() +
-    geom_sf(data = world_robin, fill = "gray80", color = "gray90", linewidth = 0.2) +
+    geom_sf(data = world_robin, fill = world_fill, color = world_border,
+            linewidth = world_lwd) +
     geom_sf(data = points_robin, aes(color = factor(cluster)), size = 3) +
-    coord_sf(expand = FALSE)+
+    coord_sf(expand = FALSE) +
     theme_void() +
     theme(
       legend.position = "inside",
@@ -434,36 +445,38 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
       legend.background = element_rect(fill = "white", color = "white", linewidth = 0.6),
       legend.margin = margin(6, 10, 6, 10),
       legend.title = ggtext::element_markdown(hjust = 0, size = 16, lineheight = 1.2),
-      legend.text  = ggtext::element_markdown(size = 18, lineheight = 1.1),
+      legend.text  = ggtext::element_markdown(size = 13, lineheight = 1.1),
       legend.key.size = unit(2.75, "lines"),
       legend.key = element_rect(fill = "white", color = NA)
     )
-    # theme(
-    #   legend.position = c(0.05, 0.5),
-    #   legend.background = element_rect(fill = "white", color = "white", linewidth = 1),
-    #   legend.title = element_text(face = "bold", hjust = 0.5, size = 20),
-    #   legend.text = element_text(face = "bold", size = 18),
-    #   legend.key.size = unit(2.75, "lines"),
-    #   legend.key = element_rect(fill = "white")
-    # )
+
   
   # Add color scale
   if (!is.null(custom_legend)) {
+    # Named vector: map each factor level to its colour explicitly
+    col_vec <- custom_legend$colors
+    if (!is.null(custom_legend$levels)) {
+      names(col_vec) <- as.character(custom_legend$levels)
+    }
     p <- p + scale_color_manual(
-      values = custom_legend$colors,
+      values = col_vec,
       labels = custom_legend$labels,
-      name = year_label
+      name = year_label,
+      drop = FALSE
     ) +
       guides(color = guide_legend(ncol = 1, override.aes = list(size = 6)))
   } else {
+    all_levels <- label_start:(label_start + number_of_cluster - 1)
+    col_vec <- lake_cols[seq_len(number_of_cluster)]
+    names(col_vec) <- as.character(all_levels)
     p <- p + scale_color_manual(
-      values = lake_cols,
-      labels = paste("AOWP ", label_start:(label_start + number_of_cluster - 1)),
-      name = year_label
+      values = col_vec,
+      labels = paste("AOWP ", all_levels),
+      name = year_label,
+      drop = FALSE
     ) +
       guides(color = guide_legend(ncol = 1, override.aes = list(size = 6)))
-  }
-  
+  }  
   # Use position if provided, otherwise use default
   if (!is.null(position)) {
     vp <- grid::viewport(x = (position[1] + position[2])/2,

@@ -101,10 +101,6 @@ clas <- read.table(
   sep = config$cluster_centroids$sep
 )
 
-
-
-
-
 # ---- Start Code - Define important variables ----
 
 # create_color_palette
@@ -171,7 +167,7 @@ tiff(
   paste0(
     config$ROOT, "/", 
     config$output_directories$for_plots,
-    "/03.NL_PercBelTitleHeadings_Class_results_full.tif"
+    "/03.NL_Grey_Class_results_full.tif"
   ),
   width = config$plotting_information$pdf_size$width,
   height = config$plotting_information$pdf_size$height_large,
@@ -297,7 +293,8 @@ plot_world_map_rob(
   lake_cols = lake_cols_list$lake_cols,
   year_label="Dominant AOWP",
   number_of_cluster=ncl,
-  position=pos_map
+  position=pos_map,
+  white_world = FALSE
 )
 
 
@@ -379,6 +376,7 @@ dev.off()
 source('scripts/utils/vis.R')
 
 # ---- Plot Lake Variability ----
+source('scripts/utils/vis.R')
 
 # Adjustments of Colorbar
 breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5,
@@ -389,7 +387,7 @@ lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(
 lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
 lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.NL_Class_variability_full.tiff"),
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.NL_Grey_Class_variability_full.tiff"),
      width = config$plotting_information$pdf_size$width,
      height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
 
@@ -432,7 +430,8 @@ plot_world_map_rob(coords = coords,
                    year_label = title_var,
                    number_of_cluster = length(var_vals),
                    custom_legend = custom_legend_var,
-                   position = pos_map)
+                   position = pos_map,
+                   white_world = FALSE)
 
 dev.off()
 
@@ -466,7 +465,9 @@ write.table(classification_summary_df_new,
 #     width=config$plotting_information$pdf_size$width, 
 #     height=config$plotting_information$pdf_size$height_small)
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/Class_change_1vs2_lajolla.tiff"),
+source('scripts/utils/vis.R')
+
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_1vs2_lajolla.tiff"),
     width=config$plotting_information$pdf_size$width, 
     height=config$plotting_information$pdf_size$height_small,
     units = "in", res = 300)
@@ -476,33 +477,72 @@ lake_cla_diff <- lake_frequencies$cluster_char_first[,1] - lake_frequencies$clus
 breaks_var <- seq(-9.5, 9.5, by = 1)
 ramp_var <- colorRamp(lake_cols_var)
 lake_cols_var <- rgb(ramp_var(seq(0, 1, length.out = length(breaks_var))), max = 255)
-lake_cols_var <- lake_cols_var[-1]  # ergibt 19 Farben
+lake_cols_var <- lake_cols_var[-1]
 
-# Cluster-Werte für die Funktion anpassen
+# Map values: no change (diff==0) -> 0 so it sorts FIRST; changes stay 1..9 / 11..19
 cluster_vals_for_map <- lake_cla_diff + 10
+cluster_vals_for_map[lake_cla_diff == 0] <- 0
 
-# Filter: Nur Punkte mit Änderungen (cluster != 10, also lake_cla_diff != 0)
-has_change <- cluster_vals_for_map != 10
-coords_filtered <- coords[has_change, ]
-cluster_vals_filtered <- cluster_vals_for_map[has_change]
+# Keep ALL points (no filtering) — draw no-transition first, changes on top
+ord <- order(cluster_vals_for_map != 0)
+coords_all <- coords[ord, ]
+cluster_vals_all <- cluster_vals_for_map[ord]
 
-# Custom Legende OHNE 0
+# Change colors (18) + light grey prepended for "No transition"
+change_cols <- lake_cols_var_lajolla[c(1:9, 11:19)]
+map_cols <- c("grey80", change_cols)
+
+# Legend: "No transition" first, then -9..-1, 1..9
 custom_legend <- list(
-  labels = c(-9:-1, 1:9),  # Keine 0
-  colors = lake_cols_var[c(1:9, 11:19)]  # Überspringe Index 10
+  levels = c(0, 1:9, 11:19),          # die echten cluster_vals, 0 = No transition
+  labels = c("No transition", -9:-1, 1:9),
+  colors = map_cols
 )
-
 pos_map <- c(0, 1, 0, 1)
 
-# Plot mit gefilterten Daten
-plot_world_map_rob(coords = coords_filtered,
-                   cluster_vals = cluster_vals_filtered,
-                   lake_cols = lake_cols_var_lajolla[c(1:9, 11:19)],  # Ohne NA
+plot_world_map_rob(coords = coords_all,
+                   cluster_vals = cluster_vals_all,
+                   lake_cols = map_cols,
                    year_label = "rel. Cluster change",
                    number_of_cluster = length(custom_legend$labels),
                    custom_par = par(mar = rep(2,4)),
                    custom_legend = custom_legend,
-                   position = pos_map)
+                   position = pos_map,
+                   white_world = TRUE)
+
+# # Colors for class changes
+# lake_cla_diff <- lake_frequencies$cluster_char_first[,1] - lake_frequencies$cluster_char_last[,1]
+# breaks_var <- seq(-9.5, 9.5, by = 1)
+# ramp_var <- colorRamp(lake_cols_var)
+# lake_cols_var <- rgb(ramp_var(seq(0, 1, length.out = length(breaks_var))), max = 255)
+# lake_cols_var <- lake_cols_var[-1]  # ergibt 19 Farben
+# 
+# # Cluster-Werte für die Funktion anpassen
+# cluster_vals_for_map <- lake_cla_diff + 10
+# 
+# # Filter: Nur Punkte mit Änderungen (cluster != 10, also lake_cla_diff != 0)
+# has_change <- cluster_vals_for_map != 10
+# coords_filtered <- coords[has_change, ]
+# cluster_vals_filtered <- cluster_vals_for_map[has_change]
+# 
+# # Custom Legende OHNE 0
+# custom_legend <- list(
+#   labels = c(-9:-1, 1:9),  # Keine 0
+#   colors = lake_cols_var[c(1:9, 11:19)]  # Überspringe Index 10
+# )
+# 
+# pos_map <- c(0, 1, 0, 1)
+# 
+# # Plot mit gefilterten Daten
+# plot_world_map_rob(coords = coords_filtered,
+#                    cluster_vals = cluster_vals_filtered,
+#                    lake_cols = lake_cols_var_lajolla[c(1:9, 11:19)],  # Ohne NA
+#                    year_label = "rel. Cluster change",
+#                    number_of_cluster = length(custom_legend$labels),
+#                    custom_par = par(mar = rep(2,4)),
+#                    custom_legend = custom_legend,
+#                    position = pos_map,
+#                    white_world = FALSE)
 
 dev.off()
 
