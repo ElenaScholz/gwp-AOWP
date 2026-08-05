@@ -796,3 +796,162 @@ plot_annual_distribution <- function(group_vector, group_name,
   dev.off()
   message("✅ Plot saved to: ", output_file)
 }
+
+plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
+                               colors,
+                               normalize = c("row", "total"),
+                               include_diagonal = TRUE,
+                               percent_on_top = TRUE,
+                               xlab = "Dominant AOWP, 2014 - 2024",
+                               ylab = "Dominant AOWP, 2003 - 2013",
+                               cex_axis = 1.0, cex_lab = 1.2, cex_values = 0.95,
+                               mar = c(4.5, 4.8, 1, 6)) {
+  normalize <- match.arg(normalize)
+  
+  count_mat <- matrix(0, nrow = ncl, ncol = ncl)
+  for (i in 1:ncl) for (j in 1:ncl) {
+    count_mat[i, j] <- sum(cluster_char_first[,1] == i & cluster_char_last[,1] == j)
+  }
+  
+  if (normalize == "row") {
+    row_tot  <- rowSums(count_mat)
+    perc_mat <- count_mat / ifelse(row_tot == 0, NA, row_tot) * 100
+  } else {
+    perc_mat <- count_mat / sum(count_mat) * 100
+  }
+  
+  disp_count <- count_mat
+  disp_perc  <- perc_mat
+  if (!include_diagonal) { diag(disp_count) <- NA; diag(disp_perc) <- NA }
+  
+  par(mar = mar)
+  # base image() respects the current fig region (image.plot does NOT)
+  image(x = 1:ncl, y = 1:ncl, z = t(disp_perc), col = colors, zlim = c(0, 100),
+        xlab = "", ylab = "", axes = FALSE,
+        xlim = c(0.5, ncl + 0.5), ylim = c(0.5, ncl + 0.5))
+  axis(1, at = 1:ncl, lwd = 2, lend = 2, cex.axis = cex_axis, font = 2, mgp = c(3, .85, 0))
+  axis(2, at = 1:ncl, lwd = 2, lend = 2, cex.axis = cex_axis, font = 2, mgp = c(3, .85, 0))
+  mtext(xlab, side = 1, line = 2.6, cex = cex_lab, font = 2)
+  mtext(ylab, side = 2, line = 2.8, cex = cex_lab, font = 2)
+  box(lwd = 2)
+  
+  for (i in 1:ncl) for (j in 1:ncl) {
+    cnt <- disp_count[i, j]; pct <- disp_perc[i, j]
+    if (is.na(cnt) || cnt == 0) next
+    top <- if (percent_on_top) paste0(round(pct, 1), "%") else as.character(cnt)
+    bot <- if (percent_on_top) paste0("(", cnt, ")") else paste0("(", round(pct, 1), "%)")
+    text(x = j, y = i + 0.22, labels = top, cex = cex_values,        font = 2)
+    text(x = j, y = i - 0.22, labels = bot, cex = cex_values * 0.85, font = 1)
+  }
+  
+  # Colorbar drawn separately, legend-only (this part of fields is fig-safe)
+  fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE,
+                     horizontal = FALSE,
+                     legend.width = 2.7,        # breiter; Default ~1.2
+                     legend.mar = 4.5,
+                     legend.args = list(text = "Share of source lakes [%]",
+                                        side = 4, line = 2.2, cex = cex_lab, font = 2))
+}
+
+# Zeichnet EINE Übergangsmatrix in die AKTUELLE fig-Region (keine Colorbar).
+draw_change_matrix_panel <- function(cf, cl, ncl, colors,
+                                     normalize = "row", include_diagonal = TRUE,
+                                     percent_on_top = TRUE,
+                                     show_xlab = TRUE, show_ylab = TRUE,
+                                     xlab = "AOWP, 2014-2024",
+                                     ylab = "AOWP, 2003-2013",
+                                     cex_axis = 0.8, cex_lab = 0.95, cex_values = 0.7,
+                                     mar = c(3.5, 3.5, 2.5, 1)) {
+  
+  count_mat <- matrix(0, ncl, ncl)
+  for (i in 1:ncl) for (j in 1:ncl)
+    count_mat[i, j] <- sum(cf == i & cl == j)
+  
+  if (normalize == "row") {
+    rt   <- rowSums(count_mat)
+    perc <- count_mat / ifelse(rt == 0, NA, rt) * 100
+  } else {
+    perc <- count_mat / sum(count_mat) * 100
+  }
+  dc <- count_mat; dp <- perc
+  if (!include_diagonal) { diag(dc) <- NA; diag(dp) <- NA }
+  
+  par(mar = mar)
+  image(1:ncl, 1:ncl, t(dp), col = colors, zlim = c(0, 100),
+        xlab = "", ylab = "", axes = FALSE,
+        xlim = c(0.5, ncl + 0.5), ylim = c(0.5, ncl + 0.5))
+  axis(1, at = 1:ncl, lwd = 1.5, cex.axis = cex_axis, font = 2, mgp = c(3, .5, 0))
+  axis(2, at = 1:ncl, lwd = 1.5, cex.axis = cex_axis, font = 2, mgp = c(3, .5, 0))
+  if (show_xlab) mtext(xlab, side = 1, line = 2.0, cex = cex_lab, font = 2)
+  if (show_ylab) mtext(ylab, side = 2, line = 2.2, cex = cex_lab, font = 2)
+  box(lwd = 1.5)
+  
+  for (i in 1:ncl) for (j in 1:ncl) {
+    cnt <- dc[i, j]; pct <- dp[i, j]
+    if (is.na(cnt) || cnt == 0) next
+    top <- if (percent_on_top) paste0(round(pct, 1), "%") else as.character(cnt)
+    bot <- if (percent_on_top) paste0("(", cnt, ")") else paste0("(", round(pct, 1), "%)")
+    text(j, i + 0.18, top, cex = cex_values,        font = 2)
+    text(j, i - 0.18, bot, cex = cex_values * 0.85, font = 1)
+  }
+}
+
+plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
+                                        ncl, colors, output_file,
+                                        group_name = "", ncol = 3,
+                                        width = 20, height = 14, res = 300,
+                                        panel_label = TRUE, cex_values = 0.7, ...) {
+  groups <- unique(group_vector)
+  ng     <- length(groups)
+  nrw    <- ceiling(ng / ncol)
+  
+  tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
+  
+  # Grundcanvas (wie in deinen anderen Plots), danach alle Panels mit new=TRUE
+  plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
+  
+  cb_left <- 0.90   # rechter Streifen für gemeinsame Colorbar
+  top     <- 0.94   # oberer Rand (Platz für Haupttitel)
+  
+  for (k in seq_len(ng)) {
+    r <- ceiling(k / ncol)            # Zeile (1 = oben)
+    c <- ((k - 1) %% ncol) + 1        # Spalte
+    
+    x0 <- (c - 1) / ncol * cb_left
+    x1 <-  c      / ncol * cb_left
+    y1 <- top - (r - 1) / nrw * top
+    y0 <- top -  r      / nrw * top
+    
+    par(fig = c(x0, x1, y0, y1), new = TRUE)
+    lakes_oi <- which(group_vector == groups[k])
+    
+    draw_change_matrix_panel(
+      cf = cluster_char_first[lakes_oi, 1],
+      cl = cluster_char_last[lakes_oi, 1],
+      ncl = ncl, colors = colors,
+      show_xlab = (r == nrw),         # nur unterste Zeile
+      show_ylab = (c == 1),           # nur erste Spalte
+      cex_values = cex_values, ...
+    )
+    
+    mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
+                 groups[k], " (", length(lakes_oi), " lakes)"),
+          side = 3, line = 0.6, cex = 1.0, font = 2, adj = 0)
+  }
+  
+  # Gemeinsame Colorbar rechts
+  par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, 4))
+  fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
+                     legend.width = 2, legend.mar = 4,
+                     legend.args = list(text = "Share of source lakes [%]",
+                                        side = 4, line = 2.2, cex = 1.0, font = 2))
+  
+  # Haupttitel
+  par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
+  plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
+       axes = FALSE, xlab = "", ylab = "")
+  text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 1.6, font = 2)
+  
+  dev.off()
+  message("Saved: ", output_file)
+}
