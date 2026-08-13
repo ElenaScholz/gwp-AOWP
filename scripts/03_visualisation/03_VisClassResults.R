@@ -561,8 +561,11 @@ plot_change_matrix_by_group(
   group_name         = "Transition matrices per climate zone",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03_NL_ChangeMatrix_ClimateZones.tiff"),
+  cb_left = 0.9,
+  legend_width = 9,
+  legend_mar =5,
   ncol               = 3,
-  cex_values = 1.3,
+  cex_values = 1.0,
   cex_lab = 1.5,
   cex_axis = 1.5
 )
@@ -578,8 +581,11 @@ plot_change_matrix_by_group(
   group_name         = "Transition matrices per continent",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03_NL_ChangeMatrix_Continents.tiff"),
+  cb_left = 0.9,
+  legend_width = 9,
+  legend_mar =5,
   ncol               = 3,
-  cex_values = 1.3,
+  cex_values = 1.0,
   cex_lab = 1.5,
   cex_axis = 1.5
 )
