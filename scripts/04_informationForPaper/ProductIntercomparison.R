@@ -22,6 +22,78 @@ facet_labels <- c(
   "Area-perc" = "Area [%]",
   "Area-normalized" = "Area [z-score]"
 )
+library(patchwork)
+
+# Linientypen pro Dataset (zusätzlich zur Farbe)
+dataset_linetypes <- c("ARLIE" = "solid", "LSE" = "dashed", "NRT-FP" = "dotdash")
+
+# Gemeinsame y-Skala
+y_scale <- scale_y_continuous(
+  limits = c(0, 1),
+  breaks = seq(0, 1, 0.1),
+  labels = c("0.0","","0.2","","0.4","","0.6","","0.8","","1.0")
+)
+
+# Rahmen + Grundtheme in einem Objekt (an jeden Plot gehängt)
+framed_theme <- theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.6)
+  )
+
+# --- Spearman (linkes Panel) ---
+p_spearman <- ggplot(all_stats_df_subset %>% filter(value.type == "Area-perc"),
+                     aes(x = spearman_cor, color = Dataset, linetype = Dataset)) +
+  stat_ecdf(linewidth = 0.8) +
+  scale_color_manual(values = dataset_colors) +
+  scale_linetype_manual(values = dataset_linetypes) +
+  scale_x_continuous(breaks = seq(-1, 1, 0.2)) +
+  y_scale +
+  labs(x = "Spearman correlation", y = "Cumulative proportion",
+       title = "Spearman correlation") +
+  framed_theme
+
+# --- RMSE-Panels ---
+make_rmse_plot <- function(vt, show_y = FALSE) {
+  ggplot(all_stats_df_subset %>% filter(RMSE > 0, value.type == vt),
+         aes(x = RMSE, color = Dataset, linetype = Dataset)) +
+    stat_ecdf(linewidth = 0.8) +
+    scale_x_log10() +
+    scale_color_manual(values = dataset_colors) +
+    scale_linetype_manual(values = dataset_linetypes) +
+    y_scale +
+    labs(x = "RMSE (log scale)", y = NULL, title = facet_labels[[vt]]) +
+    framed_theme +
+    theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+}
+
+p_rmse_area <- make_rmse_plot("Area-perc")
+p_rmse_norm <- make_rmse_plot("Area-normalized")
+
+# --- Kombiniert ---
+p_combined <- (p_spearman | p_rmse_area | p_rmse_norm) +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
+  theme(legend.position = "bottom")
+
+p_combined
+
+ggsave("T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/ecdf_validation.png",
+       p_combined, width = 12, height = 4.5, dpi = 300)
+
+
+
+
+
+
+
+
+
+
+
+
 p_spearman <- ggplot(all_stats_df_subset %>% filter(value.type == "Area-perc"), aes(x = spearman_cor, color = Dataset)) +
 stat_ecdf(linewidth = 0.8) +
   scale_color_manual(values = dataset_colors) +
