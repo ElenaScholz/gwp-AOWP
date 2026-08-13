@@ -40,7 +40,7 @@ config <- list(
     )
   ),
   output_directories = list(
-    for_plots = "CluDatOutput/plots",
+    for_plots = "CluDatOutput/plots_NewLayout",
     for_data = "CluDatOutput/data"
   )
 )
@@ -167,7 +167,7 @@ tiff(
   paste0(
     config$ROOT, "/", 
     config$output_directories$for_plots,
-    "/03.NL_Grey_Class_results_full.tif"
+    "/03.NL_White_Class_results_full.tif"
   ),
   width = config$plotting_information$pdf_size$width,
   height = config$plotting_information$pdf_size$height_large,
@@ -201,7 +201,7 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
      axes=FALSE, xlab="", ylab="")
 
 text(0.03, 0.5,
-     "A  Annual Open Surface Water Patterns (AOWPs)",
+     "A",
      adj=c(0,0.5), cex=1.8, font=2)
 # ----------------------------------------------------
 # Top row: clusters 1-5
@@ -273,7 +273,7 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
      axes=FALSE, xlab="", ylab="")
 
 text(0.03, 0.5,
-     "B  Global Distribution of Dominant AOWPs",
+     "B",
      adj=c(0,0.5), cex=1.8, font=2)
 
 
@@ -294,7 +294,7 @@ plot_world_map_rob(
   year_label="Dominant AOWP",
   number_of_cluster=ncl,
   position=pos_map,
-  white_world = FALSE
+  white_world = TRUE
 )
 
 
@@ -320,7 +320,7 @@ for (year in seq(start_year, end_year)) {
   plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
        xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
   text(0.03, 0.5,
-       "A  Annual Open Surface Water Patterns (AOWPs)",
+       "A",
        adj=c(0,0.5), cex=1.8, font=2)
   
   # ---- Top row: clusters 1-5 ----
@@ -354,7 +354,7 @@ for (year in seq(start_year, end_year)) {
   plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
        xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
   text(0.03, 0.5,
-       paste0("B  Distribution of AOWPs — ", year),
+       paste0("B"),
        adj=c(0,0.5), cex=1.8, font=2)
   
   # ---- Map ----
@@ -365,7 +365,8 @@ for (year in seq(start_year, end_year)) {
     lake_cols = lake_cols_list$lake_cols,
     year_label = paste("AOWP:", year),
     number_of_cluster = ncl,
-    position = pos_map
+    position = pos_map,
+    white_world = TRUE
   )
 }
 
@@ -386,8 +387,7 @@ lake_cols_var <- rgb(lake_cols_list$ramp_dev(seq(0, 1, length = length(breaks_va
 lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(10)
 lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
 lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
-
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.NL_Grey_Class_variability_full.tiff"),
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.NL_White_Class_variability_full.tiff"),
      width = config$plotting_information$pdf_size$width,
      height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
 
@@ -398,43 +398,22 @@ pos_map <- c(0, 1, 0, 1)
 
 var_vals <- sort(unique(lake_frequencies$cluster_char_total[,2]))
 
-# --- Long title: bold (3 lines) + plain smaller subtitle (2 lines) ---
-title_var <- paste0(
-  "<span style='font-size:16pt'>",
-  "**Number of additional different<br>",
-  "AOWPs classified<br>",
-  "per water body**",
-  "</span><br>",
-  "<span style='font-size:13pt;font-weight:normal'>",
-  "(beyond the dominant AOWP<br>",
-  "over the 22-year period)",
-  "</span>"
-)
-
-# --- Labels: first (0) and last (max) get 2-line descriptions, rest are plain numbers ---
-lab_fun <- function(v) {
-  if (v == 0)                return("0 (no additional AOWP;<br>same AOWP all 22 years)")
-  if (v == max(var_vals))    return(paste0(v, " (", v, " additional<br>AOWPs observed)"))
-  as.character(v)
-}
-custom_labels <- vapply(var_vals, lab_fun, character(1))
-
+# Kurzer Titel + schlichte Zahlen-Labels (Details gehen in die Caption)
 custom_legend_var <- list(
-  labels = custom_labels,
+  labels = as.character(var_vals),
   colors = lake_cols_var_lajolla[seq_along(var_vals)]
 )
 
 plot_world_map_rob(coords = coords,
                    cluster_vals = lake_frequencies$cluster_char_total[,2],
                    lake_cols = lake_cols_var_lajolla,
-                   year_label = title_var,
+                   year_label = "AOWP variability",
                    number_of_cluster = length(var_vals),
                    custom_legend = custom_legend_var,
                    position = pos_map,
-                   white_world = FALSE)
+                   white_world = TRUE)
 
 dev.off()
-
 # ---- Write Classification Summary ----
 
 # 20.04.2026 the file does not contain all information , therefore new function added (_new)
@@ -468,34 +447,16 @@ write.table(classification_summary_df_new,
 source('scripts/utils/vis.R')
 
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target.tiff"),
-     width=config$plotting_information$pdf_size$width, 
-     height=config$plotting_information$pdf_size$height_large,   # large! (Karte + Matrix brauchen Höhe)
-     units = "in", res = 300)
+# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target.tiff"),
+#      width=config$plotting_information$pdf_size$width, 
+#      height=config$plotting_information$pdf_size$height_large,   # large! (Karte + Matrix brauchen Höhe)
+#      units = "in", res = 300)
 
+# ================= Shared data prep =================
 base_cols <- colorRampPalette(heatmap_colors$lake_cols)(100)
-base_cols <- base_cols[15:100]                       # untere (dunkelste) 14 weglassen
-colors_lightened <- colorRampPalette(base_cols)(100) # wieder auf 100 strecken
+base_cols <- base_cols[15:100]
+colors_lightened <- colorRampPalette(base_cols)(100)
 
-
-plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
-
-# ------------------- Main title + A heading -------------------
-par(fig=c(0,1,0.95,1.00), new=TRUE, mar=c(0,0,0,0))
-plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i",
-     axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5,
-     "Transitions of dominant Annual Open Surface Water Patterns (AOWPs)",
-     adj=c(0,0.5), cex=1.8, font=2)
-
-par(fig=c(0,1,0.90,0.94), new=TRUE, mar=c(0,0,0,0))
-plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i",
-     axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5,
-     "A  Global distribution of dominant AOWP transitions",
-     adj=c(0,0.5), cex=1.5, font=2)
-
-# ------------------- Map data -------------------
 changed <- lake_frequencies$cluster_char_first[,1] != lake_frequencies$cluster_char_last[,1]
 target_cluster <- lake_frequencies$cluster_char_last[,1]
 cluster_vals_for_map <- ifelse(changed, target_cluster, 0)
@@ -505,52 +466,83 @@ coords_all       <- coords[ord, ]
 cluster_vals_all <- cluster_vals_for_map[ord]
 
 map_cols <- c("grey80", lake_cols_list$lake_cols)
-
 custom_legend <- list(
   levels = 0:10,
   labels = c("No transition", paste("AOWP", 1:10)),
   colors = map_cols
 )
 
-# Map occupies the upper half
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target.tiff"),
+     width=config$plotting_information$pdf_size$width, 
+     height=config$plotting_information$pdf_size$height_large,
+     units = "in", res = 300)
+
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
+
+# A heading
+par(fig=c(0,1,0.90,0.94), new=TRUE, mar=c(0,0,0,0))
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+text(0.03, 0.5, "A", adj=c(0,0.5), cex=1.8, font=2)
+
+# Map
 pos_map <- c(0, 1, 0.47, 0.90)
 plot_world_map_rob(coords = coords_all,
                    cluster_vals = cluster_vals_all,
                    lake_cols = map_cols,
-                   year_label = "Cluster transition",
+                   year_label = "",                     # kein Legendentitel
                    number_of_cluster = length(custom_legend$labels),
                    custom_legend = custom_legend,
                    position = pos_map,
                    white_world = TRUE)
 
-# ------------------- B heading -------------------
+# B heading
 par(fig=c(0,1,0.42,0.46), new=TRUE, mar=c(0,0,0,0))
-plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i",
-     axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5,
-     "B  Global transition matrix",
-     adj=c(0,0.5), cex=1.5, font=2)
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+text(0.03, 0.5, "B", adj=c(0,0.5), cex=1.8, font=2)
 
-# ------------------- Matrix (lower half) -------------------
-# IMPORTANT: set the fig region for the matrix; keep it roughly square & centred
-# par(fig=c(0.28, 0.72, 0.00, 0.42), new=TRUE)
-# par(fig=c(0.22, 0.78, 0.00, 0.44), new=TRUE)
+# Matrix
 par(fig=c(0.30, 0.70, 0.00, 0.42), new=TRUE)
 plot_change_matrix(
   cluster_char_first = lake_frequencies$cluster_char_first,
   cluster_char_last  = lake_frequencies$cluster_char_last,
-  ncl                = ncl,
-  colors             = colors_lightened,  #colorRampPalette(heatmap_colors$lake_cols)(100),
-  normalize          = "row",
-  include_diagonal   = TRUE,
-  percent_on_top     = TRUE,
-  cex_values = 1.3,
-  cex_lab = 1.5,
-  cex_axis = 1.5
+  ncl = ncl, colors = colors_lightened,
+  normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
+  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5
 )
 
 dev.off()
 
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target_MAP.tiff"),
+     width=config$plotting_information$pdf_size$width, 
+     height=config$plotting_information$pdf_size$height_small,
+     units = "in", res = 300)
+
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
+
+pos_map <- c(0, 1, 0, 1)
+plot_world_map_rob(coords = coords_all,
+                   cluster_vals = cluster_vals_all,
+                   lake_cols = map_cols,
+                   year_label = "",
+                   number_of_cluster = length(custom_legend$labels),
+                   custom_legend = custom_legend,
+                   position = pos_map,
+                   white_world = TRUE)
+
+dev.off()
+
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target_MATRIX.tiff"),
+     width=12, height=11, units = "in", res = 300, compression = "lzw")
+
+plot_change_matrix(
+  cluster_char_first = lake_frequencies$cluster_char_first,
+  cluster_char_last  = lake_frequencies$cluster_char_last,
+  ncl = ncl, colors = colors_lightened,
+  normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
+  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5
+)
+
+dev.off()
 
 # ---- Pie Charts changes of climate regions between first and second period ----
 
@@ -574,6 +566,7 @@ plot_change_matrix_by_group(
   cex_lab = 1.5,
   cex_axis = 1.5
 )
+
 
 # ---- Transition matrices per continent ----
 plot_change_matrix_by_group(

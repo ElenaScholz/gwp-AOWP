@@ -896,26 +896,28 @@ draw_change_matrix_panel <- function(cf, cl, ncl, colors,
   }
 }
 
+
 plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
                                         ncl, colors, output_file,
                                         group_name = "", ncol = 3,
                                         width = 20, height = 14, res = 300,
-                                        panel_label = TRUE, cex_values = 0.7, ...) {
+                                        panel_label = TRUE,
+                                        cex_values = 0.7, cex_lab = 0.95, cex_axis = 0.8,
+                                        legend_width = 2.7, legend_mar = 4.5,
+                                        cb_left = 0.90, ...) {
   groups <- unique(group_vector)
   ng     <- length(groups)
   nrw    <- ceiling(ng / ncol)
   
   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
   
-  # Grundcanvas (wie in deinen anderen Plots), danach alle Panels mit new=TRUE
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
   
-  cb_left <- 0.90   # rechter Streifen für gemeinsame Colorbar
-  top     <- 0.94   # oberer Rand (Platz für Haupttitel)
+  top <- 0.94
   
   for (k in seq_len(ng)) {
-    r <- ceiling(k / ncol)            # Zeile (1 = oben)
-    c <- ((k - 1) %% ncol) + 1        # Spalte
+    r <- ceiling(k / ncol)
+    c <- ((k - 1) %% ncol) + 1
     
     x0 <- (c - 1) / ncol * cb_left
     x1 <-  c      / ncol * cb_left
@@ -929,24 +931,23 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
       cf = cluster_char_first[lakes_oi, 1],
       cl = cluster_char_last[lakes_oi, 1],
       ncl = ncl, colors = colors,
-      show_xlab = (r == nrw),         # nur unterste Zeile
-      show_ylab = (c == 1),           # nur erste Spalte
-      cex_values = cex_values, ...
+      show_xlab = (r == nrw),
+      show_ylab = (c == 1),
+      cex_values = cex_values, cex_lab = cex_lab, cex_axis = cex_axis, ...
     )
     
     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
                  groups[k], " (", length(lakes_oi), " lakes)"),
-          side = 3, line = 0.6, cex = 1.0, font = 2, adj = 0)
+          side = 3, line = 0.6, cex = cex_lab * 1.05, font = 2, adj = 0)
   }
   
-  # Gemeinsame Colorbar rechts
-  par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, 4))
+  # Gemeinsame Colorbar rechts — jetzt gleiches Layout wie plot_change_matrix
+  par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, legend_mar))
   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
-                     legend.width = 2, legend.mar = 4,
+                     legend.width = legend_width, legend.mar = legend_mar,
                      legend.args = list(text = "Share of source lakes [%]",
-                                        side = 4, line = 2.2, cex = 1.0, font = 2))
+                                        side = 4, line = 2.2, cex = cex_lab, font = 2))
   
-  # Haupttitel
   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
        axes = FALSE, xlab = "", ylab = "")
@@ -955,3 +956,63 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
   dev.off()
   message("Saved: ", output_file)
 }
+
+# plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
+#                                         ncl, colors, output_file,
+#                                         group_name = "", ncol = 3,
+#                                         width = 20, height = 14, res = 300,
+#                                         panel_label = TRUE, cex_values = 0.7, ...) {
+#   groups <- unique(group_vector)
+#   ng     <- length(groups)
+#   nrw    <- ceiling(ng / ncol)
+#   
+#   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
+#   
+#   # Grundcanvas (wie in deinen anderen Plots), danach alle Panels mit new=TRUE
+#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
+#   
+#   cb_left <- 0.90   # rechter Streifen für gemeinsame Colorbar
+#   top     <- 0.94   # oberer Rand (Platz für Haupttitel)
+#   
+#   for (k in seq_len(ng)) {
+#     r <- ceiling(k / ncol)            # Zeile (1 = oben)
+#     c <- ((k - 1) %% ncol) + 1        # Spalte
+#     
+#     x0 <- (c - 1) / ncol * cb_left
+#     x1 <-  c      / ncol * cb_left
+#     y1 <- top - (r - 1) / nrw * top
+#     y0 <- top -  r      / nrw * top
+#     
+#     par(fig = c(x0, x1, y0, y1), new = TRUE)
+#     lakes_oi <- which(group_vector == groups[k])
+#     
+#     draw_change_matrix_panel(
+#       cf = cluster_char_first[lakes_oi, 1],
+#       cl = cluster_char_last[lakes_oi, 1],
+#       ncl = ncl, colors = colors,
+#       show_xlab = (r == nrw),         # nur unterste Zeile
+#       show_ylab = (c == 1),           # nur erste Spalte
+#       cex_values = cex_values, ...
+#     )
+#     
+#     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
+#                  groups[k], " (", length(lakes_oi), " lakes)"),
+#           side = 3, line = 0.6, cex = 1.0, font = 2, adj = 0)
+#   }
+#   
+#   # Gemeinsame Colorbar rechts
+#   par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, 4))
+#   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
+#                      legend.width = 2, legend.mar = 4,
+#                      legend.args = list(text = "Share of source lakes [%]",
+#                                         side = 4, line = 2.2, cex = 1.0, font = 2))
+#   
+#   # Haupttitel
+#   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
+#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
+#        axes = FALSE, xlab = "", ylab = "")
+#   text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 1.6, font = 2)
+#   
+#   dev.off()
+#   message("Saved: ", output_file)
+# }
