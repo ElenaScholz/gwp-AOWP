@@ -110,7 +110,8 @@ lake_cols_list <- create_lake_color_palette(config = config,
 )
 
 heatmap_colors <- create_lake_color_palette(config, color_ramp = (colorBlindness::Blue2Orange10Steps))
-
+# matrix_cols <- colorRampPalette(c("#5A6B7B", "#8A97A6", "#C7CDD4", "#F0EAE2", "#F4C17A", "#E8963A"))(100)
+matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#DCE0DE", "#F0E8DC", "#F4C17A", "#E8963A"))(100)
 lake_cols <- lake_cols_list$lake_cols
 # Calculate number of years per lake
 number_of_years <- nrow(normalized_lake_dat) / nrow(coords)
@@ -167,7 +168,7 @@ tiff(
   paste0(
     config$ROOT, "/", 
     config$output_directories$for_plots,
-    "/03.NL_White_Class_results_full.tif"
+    "/03.1.NL_White_Class_results_full.tif"
   ),
   width = config$plotting_information$pdf_size$width,
   height = config$plotting_information$pdf_size$height_large,
@@ -201,7 +202,7 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
      axes=FALSE, xlab="", ylab="")
 
 text(0.03, 0.5,
-     "A",
+     "(a) Annual Open-Surface-Water Patterns (AOWPs)",
      adj=c(0,0.5), cex=1.8, font=2)
 # ----------------------------------------------------
 # Top row: clusters 1-5
@@ -209,7 +210,7 @@ text(0.03, 0.5,
 
 for (cla in 1:5) {
   
-  pos <- c(0.03 + 0.19*(cla-1), 0.03 + 0.19*cla, 0.74, 0.92)
+  pos <- c(0.03 + 0.19*(cla-1), 0.03 + 0.19*cla, 0.74, 0.94)
   
   plot_class_panel(
     cla = cla,
@@ -273,7 +274,7 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
      axes=FALSE, xlab="", ylab="")
 
 text(0.03, 0.5,
-     "B",
+     "(b) Global distribution of dominant AOWPs",
      adj=c(0,0.5), cex=1.8, font=2)
 
 
@@ -377,17 +378,54 @@ dev.off()
 source('scripts/utils/vis.R')
 
 # ---- Plot Lake Variability ----
+# source('scripts/utils/vis.R')
+# 
+# # Adjustments of Colorbar
+# breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5,
+#                   max(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)+.5)
+# 
+# lake_cols_var <- rgb(lake_cols_list$ramp_dev(seq(0, 1, length = length(breaks_var)-1)), max = 255)
+# lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(10)
+# lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
+# lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
+# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.2.NL_White_Class_variability_full.tiff"),
+#      width = config$plotting_information$pdf_size$width,
+#      height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
+# 
+# plot(0,0,type="n",xlim=c(-180,180),ylim=c(-60,90),axes=FALSE,
+#      yaxs="i",xaxs="i",xlab="",ylab="",cex.axis=1.5)
+# 
+# pos_map <- c(0, 1, 0, 1)
+# 
+# var_vals <- sort(unique(lake_frequencies$cluster_char_total[,2])) # add the percentage as well
+# 
+# # Kurzer Titel + schlichte Zahlen-Labels (Details gehen in die Caption)
+# custom_legend_var <- list(
+#   labels = as.character(var_vals),
+#   colors = lake_cols_var_lajolla[seq_along(var_vals)]
+# )
+# 
+# plot_world_map_rob(coords = coords,
+#                    cluster_vals = lake_frequencies$cluster_char_total[,2],
+#                    lake_cols = lake_cols_var_lajolla,
+#                    year_label = "AOWP variability", # Number of additional different AOWPs classified per water body (beyond the dominant AOWP over the 22-year period)
+#                    number_of_cluster = length(var_vals),
+#                    custom_legend = custom_legend_var,
+#                    position = pos_map,
+#                    white_world = TRUE)
+# 
+# dev.off()
+
 source('scripts/utils/vis.R')
 
-# Adjustments of Colorbar
 breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5,
                   max(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)+.5)
-
 lake_cols_var <- rgb(lake_cols_list$ramp_dev(seq(0, 1, length = length(breaks_var)-1)), max = 255)
 lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(10)
 lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
 lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.NL_White_Class_variability_full.tiff"),
+
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.2.NL_White_Class_variability_full.tiff"),
      width = config$plotting_information$pdf_size$width,
      height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
 
@@ -398,22 +436,42 @@ pos_map <- c(0, 1, 0, 1)
 
 var_vals <- sort(unique(lake_frequencies$cluster_char_total[,2]))
 
-# Kurzer Titel + schlichte Zahlen-Labels (Details gehen in die Caption)
+# Percentage of water bodies per variability value
+var_col   <- lake_frequencies$cluster_char_total[,2]
+var_perc  <- sapply(var_vals, function(v) 100 * sum(var_col == v, na.rm = TRUE) / length(var_col))
+
+# Labels: value + percentage in parentheses
+custom_labels <- paste0(var_vals, " (", round(var_perc, 2), "%)")
+
 custom_legend_var <- list(
-  labels = as.character(var_vals),
+  labels = custom_labels,
   colors = lake_cols_var_lajolla[seq_along(var_vals)]
+)
+
+# Two-line title: bold on top, plain smaller subtitle below
+title_var <- paste0(
+  "<span style='font-size:16pt'>",
+  "**Number of additional different<br>",
+  "AOWPs per water body**",
+  "</span><br>",
+  "<span style='font-size:12pt;font-weight:normal'>",
+  "(beyond the dominant AOWP<br>",
+  "over the 22-year period)",
+  "</span>"
 )
 
 plot_world_map_rob(coords = coords,
                    cluster_vals = lake_frequencies$cluster_char_total[,2],
                    lake_cols = lake_cols_var_lajolla,
-                   year_label = "AOWP variability",
+                   year_label = title_var,
                    number_of_cluster = length(var_vals),
                    custom_legend = custom_legend_var,
                    position = pos_map,
                    white_world = TRUE)
 
 dev.off()
+
+
 # ---- Write Classification Summary ----
 
 # 20.04.2026 the file does not contain all information , therefore new function added (_new)
@@ -472,17 +530,40 @@ custom_legend <- list(
   colors = map_cols
 )
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target.tiff"),
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target.tiff"),
      width=config$plotting_information$pdf_size$width, 
      height=config$plotting_information$pdf_size$height_large,
      units = "in", res = 300)
 
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
+n_changed <- sum(changed)
+n_total   <- length(changed)
+pct_changed <- 100 * n_changed / n_total
+change_subtitle <- sprintf("%d of %d water bodies changed (%.1f%%)",
+                           n_changed, n_total, pct_changed)
+# # A heading
+# par(fig=c(0,1,0.92,1), new=TRUE, mar=c(0,0,0,0))
+# # par(fig=c(0,1,0.90,0.94), new=TRUE, mar=c(0,0,0,0))
+# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+# text(0.03, 0.5, "(a) Global distribution of dominant AOWP transitions", adj=c(0,0.5), cex=1.8, font=2)
+# # add second smaller line in grey "N of M lakes changed (xx %)"
+# 
+# # grey subtitle line
+# par(fig=c(0,1,0.85,0.905), new=TRUE, mar=c(0,0,0,0))
+# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+# text(0.03, 0.5, change_subtitle,
+#      adj=c(0,0.5), cex=1.2, font=1, col="grey30")
 
-# A heading
-par(fig=c(0,1,0.90,0.94), new=TRUE, mar=c(0,0,0,0))
-plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5, "A", adj=c(0,0.5), cex=1.8, font=2)
+par(fig=c(0,1,0.88,1), new=TRUE, mar=c(0,0,0,0))
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i",
+     axes=FALSE, xlab="", ylab="")
+
+text(0.03, 0.72, "(a) Global distribution of dominant AOWP transitions",
+     adj=c(0,0.5), cex=1.8, font=2)
+text(0.03, 0.52, change_subtitle,
+     adj=c(0,0.5), cex=1.2, font=1, col="grey30")
+
+
 
 # Map
 pos_map <- c(0, 1, 0.47, 0.90)
@@ -498,28 +579,40 @@ plot_world_map_rob(coords = coords_all,
 # B heading
 par(fig=c(0,1,0.42,0.46), new=TRUE, mar=c(0,0,0,0))
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5, "B", adj=c(0,0.5), cex=1.8, font=2)
+text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=1.8, font=2)
 
 # Matrix
-par(fig=c(0.30, 0.70, 0.00, 0.42), new=TRUE)
+
+# legend at the bottom
+par(fig=c(0.34, 0.66, 0.00, 0.42), new=TRUE)
 plot_change_matrix(
   cluster_char_first = lake_frequencies$cluster_char_first,
   cluster_char_last  = lake_frequencies$cluster_char_last,
-  ncl = ncl, colors = colors_lightened,
+  ncl = ncl, colors = matrix_cols,
   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5
+  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5, mar = c(10, 4.8, 1,1)
 )
 
 dev.off()
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target_MAP.tiff"),
+
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_MAP.tiff"),
      width=config$plotting_information$pdf_size$width, 
      height=config$plotting_information$pdf_size$height_small,
      units = "in", res = 300)
 
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
 
-pos_map <- c(0, 1, 0, 1)
+# Heading + grey subtitle
+par(fig=c(0,1,0.88,1), new=TRUE, mar=c(0,0,0,0))
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+text(0.03, 0.68, "Global distribution of dominant AOWP transitions",
+     adj=c(0,0.5), cex=1.8, font=2)
+text(0.03, 0.42, change_subtitle,
+     adj=c(0,0.5), cex=1.2, font=1, col="grey30")
+
+# Map below the heading
+pos_map <- c(0, 1, 0, 0.87)
 plot_world_map_rob(coords = coords_all,
                    cluster_vals = cluster_vals_all,
                    lake_cols = map_cols,
@@ -528,20 +621,22 @@ plot_world_map_rob(coords = coords_all,
                    custom_legend = custom_legend,
                    position = pos_map,
                    white_world = TRUE)
-
 dev.off()
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target_MATRIX.tiff"),
-     width=12, height=11, units = "in", res = 300, compression = "lzw")
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_MATRIX.tiff"),
+     width=12, height=12, units = "in", res = 300, compression = "lzw")
+
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
+par(fig=c(0.08, 0.92, 0.06, 0.94), new=TRUE)   # Matrix füllt nicht das ganze Blatt
 
 plot_change_matrix(
   cluster_char_first = lake_frequencies$cluster_char_first,
   cluster_char_last  = lake_frequencies$cluster_char_last,
-  ncl = ncl, colors = colors_lightened,
+  ncl = ncl, colors = matrix_cols,
   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5
+  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5,
+  mar = c(9, 6, 1, 1), legend_mar = 1
 )
-
 dev.off()
 
 # ---- Pie Charts changes of climate regions between first and second period ----
@@ -557,17 +652,17 @@ plot_change_matrix_by_group(
   cluster_char_first = lake_frequencies$cluster_char_first,
   cluster_char_last  = lake_frequencies$cluster_char_last,
   ncl                = ncl,
-  colors             = colors_lightened,
+  colors             = matrix_cols,
   group_name         = "Transition matrices per climate zone",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
-                              "/03_NL_ChangeMatrix_ClimateZones.tiff"),
-  cb_left = 0.9,
-  legend_width = 9,
-  legend_mar =5,
+                              "/03.4_NL_ChangeMatrix_ClimateZones.tiff"),
+  cb_bottom          = 0.12,      # schmaler Streifen unten (NICHT 0.8)
+  legend_width       = 4,       # Dicke der Bar (NICHT 10)
+  legend_mar         = 3,         # Abstand nach unten (NICHT 10)
   ncol               = 3,
-  cex_values = 1.0,
-  cex_lab = 1.5,
-  cex_axis = 1.5
+  cex_values         = 1.0,
+  cex_lab            = 1.5,
+  cex_axis           = 1.5
 )
 
 
@@ -577,192 +672,41 @@ plot_change_matrix_by_group(
   cluster_char_first = lake_frequencies$cluster_char_first,
   cluster_char_last  = lake_frequencies$cluster_char_last,
   ncl                = ncl,
-  colors             = colors_lightened,
+  colors             = matrix_cols,
   group_name         = "Transition matrices per continent",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
-                              "/03_NL_ChangeMatrix_Continents.tiff"),
-  cb_left = 0.9,
-  legend_width = 9,
-  legend_mar =5,
+                              "/03.4_NL_ChangeMatrix_Continents.tiff"),
+  cb_bottom          = 0.12,      # schmaler Streifen unten (NICHT 0.8)
+  legend_width       = 4,       # Dicke der Bar (NICHT 10)
+  legend_mar         = 3,         # Abstand nach unten (NICHT 10)
   ncol               = 3,
-  cex_values = 1.0,
-  cex_lab = 1.5,
-  cex_axis = 1.5
+  cex_values         = 1.0,
+  cex_lab            = 1.5,
+  cex_axis           = 1.5
 )
 
 # 
-# # ---- Plot settings ----
-# # Climate zones: use defaults 
-# # Continents: adjust these values as needed
-# # ---- Plot settings ----
-# # Climate zones: use function defaults (already tuned)
-# 
-# # Continents: custom values to account for different number of rows/cell sizes
-# cont_pie_settings <- list(
-#   cex_main = 1.0,        # Font size of the title (e.g., "Europe (42 lakes)")
-#   cex_legend = 1.7,      # Font size of the legend text
-#   cex_label = 1.3,       # Font size of the subplot label (e.g., "(a)")
-#   radius = 0.95,         # Pie chart radius (0-1, fraction of plot area)
-#   title_adj = 0.6,       # Horizontal position of title (0=left, 0.5=center, 1=right)
-#   title_line = -0.25,    # Vertical position of title (higher value = further from plot)
-#   label_adj = -0.25,     # Horizontal position of subplot label (negative = further left)
-#   label_line = -0.05,    # Vertical position of subplot label
-#   legend_x = -2.75,       # Legend x-position in plot coordinates (pie ranges from -1 to 1)
-#   legend_y = 0.8,        # Legend y-position: top edge of legend box
-#   legend_pt_cex = 1.7,   # Size of colored dots in legend
-#   plt = c(0.25, 0.95, 0.1, 0.9),  # Plot region within figure: c(left, right, bottom, top) as fractions
-#   mar = c(0, 1, 3, 1)   # Margins in lines: c(bottom, left, top, right)
-# )
-# 
-# cont_heatmap_settings <- list(
-#   cex_axis = 0.8,        # Font size of axis tick labels (1-10)
-#   cex_lab = 0.8,         # Font size of axis titles and colorbar label
-#   cex_values = 1.0,      # Font size of percentage values inside heatmap cells
-#   mar = c(4, 4, 1, 4)   # Margins in lines: c(bottom, left, top, right)
-# )
-# 
-# # ---- Pie Charts changes of climate regions between first and second period ----
-# pdf_climate <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_ClimateZones.tiff"), 
-#                           nrows = length(unique(climate$description_of_zone)), ncols = 2)
-# state <- list(sum_change = 0, n = 1)
-# all_shifts <- list()
-# for (i in unique(climate$description_of_zone)){
-#   lakes_oi <- which(climate$description_of_zone == i)
-#   all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
-# }
-# global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
-# 
-# for (i in unique(climate$description_of_zone)){
-#   lakes_oi <- which(climate$description_of_zone == i)
-#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
-#   plot_shift_heatmap(all_shifts[[i]], ncl, 
-#                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-#                      "Cluster type, 2014 - 2024", "Cluster type, 2003 - 2013",
-#                      zlim = global_zlim)
-#   state$n <- state$n + 1
-# }
-# dev.off()
-# 
-# # ---- Pie Charts changes of continents between first and second period ----
-# pdf_continent <- setup_tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChanges_Continents.tiff"), 
-#                             nrows = length(unique(continents$continent)), ncols = 2)
-# state <- list(sum_change = 0, n = 1)
-# all_shifts <- list()
-# for (i in unique(continents$continent)){
-#   lakes_oi <- which(continents$continent == i)
-#   all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="period")
-# }
-# global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
-# for (i in unique(continents$continent)){
-#   lakes_oi <- which(continents$continent == i)
-#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols,
-#            cex_main = cont_pie_settings$cex_main,
-#            cex_legend = cont_pie_settings$cex_legend,
-#            cex_label = cont_pie_settings$cex_label,
-#            radius = cont_pie_settings$radius,
-#            title_adj = cont_pie_settings$title_adj,
-#            title_line = cont_pie_settings$title_line,
-#            label_adj = cont_pie_settings$label_adj,
-#            label_line = cont_pie_settings$label_line,
-#            legend_x = cont_pie_settings$legend_x,
-#            legend_y = cont_pie_settings$legend_y,
-#            legend_pt_cex = cont_pie_settings$legend_pt_cex,
-#            plt = cont_pie_settings$plt,
-#            mar = cont_pie_settings$mar)
-#   plot_shift_heatmap(all_shifts[[i]], ncl, 
-#                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-#                      "Cluster type, 2014 - 2024", "Cluster type, 2003 - 2013",
-#                      zlim = global_zlim,
-#                      cex_axis = cont_heatmap_settings$cex_axis,
-#                      cex_lab = cont_heatmap_settings$cex_lab,
-#                      cex_values = cont_heatmap_settings$cex_values,
-#                      mar = cont_heatmap_settings$mar)
-#   state$n <- state$n + 1
-# }
-#  dev.off()
-# 
-# # ---- Pie Chart Climate Zones annual ----
-# year1 <- 2003
-# year2 <- 2004
-# tiff_pie_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_climates.tiff",sep=""), 
-#                               nrows = length(unique(climate$description_of_zone)), ncols = 2)
-# state <- list(sum_change = 0, n = 1)
-# all_shifts <- list()
-# for (i in unique(climate$description_of_zone)){
-#   lakes_oi <- which(climate$description_of_zone == i)
-#   all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
-# }
-# global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
-# for (i in unique(climate$description_of_zone)){
-#   lakes_oi <- which(climate$description_of_zone == i)
-#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols)
-#   plot_shift_heatmap(all_shifts[[i]], ncl, 
-#                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-#                      paste("Cluster type,", year2), paste("Cluster type,", year1),
-#                      zlim = global_zlim)
-#   state$n <- state$n + 1
-# }
-# dev.off()
-# 
-# # ---- Pie Chart Continents Annual ----
-# pdf_continent_annual <- setup_tiff(paste(config$ROOT, "/", config$output_directories$for_plots, "/03_PieCharts_LakeChangesAnnual_",year1,"vs",year2,"_continents.tiff",sep=""), 
-#                                    nrows = length(unique(continents$continent)), ncols = 2)
-# state <- list(sum_change = 0, n = 1)
-# all_shifts <- list()
-# for (i in unique(continents$continent)){
-#   lakes_oi <- which(continents$continent == i)
-#   all_shifts[[i]] <- calc_shift_heatmap(lakes_oi, ncl, mode="annual", year1=year1, year2=year2)
-# }
-# global_zlim <- range(unlist(all_shifts), na.rm = TRUE)
-# for (i in unique(continents$continent)){
-#   lakes_oi <- which(continents$continent == i)
-#   plot_pie(lakes_oi, i, state$n, ncl, lake_cols,
-#            cex_main = cont_pie_settings$cex_main,
-#            cex_legend = cont_pie_settings$cex_legend,
-#            cex_label = cont_pie_settings$cex_label,
-#            radius = cont_pie_settings$radius,
-#            title_adj = cont_pie_settings$title_adj,
-#            title_line = cont_pie_settings$title_line,
-#            label_adj = cont_pie_settings$label_adj,
-#            label_line = cont_pie_settings$label_line,
-#            legend_x = cont_pie_settings$legend_x,
-#            legend_y = cont_pie_settings$legend_y,
-#            legend_pt_cex = cont_pie_settings$legend_pt_cex,
-#            plt = cont_pie_settings$plt,
-#            mar = cont_pie_settings$mar)
-#   plot_shift_heatmap(all_shifts[[i]], ncl, 
-#                      colors = colorRampPalette(heatmap_colors$lake_cols)(100), 
-#                      paste("Cluster type,", year2), paste("Cluster type,", year1),
-#                      zlim = global_zlim,
-#                      cex_axis = cont_heatmap_settings$cex_axis,
-#                      cex_lab = cont_heatmap_settings$cex_lab,
-#                      cex_values = cont_heatmap_settings$cex_values,
-#                      mar = cont_heatmap_settings$mar)
-#   state$n <- state$n + 1
-# }
-# dev.off()
-# 
 # # 
-# 
-# # ---- Plot Annual Distribution Heatmaps ----
-# plot_annual_distribution(
-#   group_vector = climate$description_of_zone,
-#   group_name   = "Climate Zones",
-#   cluster_dist = cluster_matrices$full,
-#   ncl          = ncl,
-#   start_year   = start_year,
-#   end_year     = end_year,
-#   output_file  = paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_AnnualLakeDistribution_Climates.tif")
-# )
-# 
-# plot_annual_distribution(
-#   group_vector = continents$continent,
-#   group_name   = "Continents",
-#   cluster_dist = cluster_matrices$full,
-#   ncl          = ncl,
-#   start_year   = start_year,
-#   end_year     = end_year,
-#   output_file  = paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_AnnualLakeDistribution_Continents.tif")
-# )
-# 
-# 
+source("scripts/utils/vis.R")
+# ---- Plot Annual Distribution Heatmaps ----
+plot_annual_distribution(
+  group_vector = climate$description_of_zone,
+  group_name   = "Climate Zones",
+  cluster_dist = cluster_matrices$full,
+  ncl          = ncl,
+  start_year   = start_year,
+  end_year     = end_year,
+  output_file  = paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_AnnualLakeDistribution_Climates.tif")
+)
+
+plot_annual_distribution(
+  group_vector = continents$continent,
+  group_name   = "Continents",
+  cluster_dist = cluster_matrices$full,
+  ncl          = ncl,
+  start_year   = start_year,
+  end_year     = end_year,
+  output_file  = paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_AnnualLakeDistribution_Continents.tif")
+)
+
+

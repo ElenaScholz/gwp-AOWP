@@ -52,7 +52,7 @@ p_spearman <- ggplot(all_stats_df_subset %>% filter(value.type == "Area-perc"),
   scale_x_continuous(breaks = seq(-1, 1, 0.2)) +
   y_scale +
   labs(x = "Spearman correlation", y = "Cumulative proportion",
-       title = "Spearman correlation") +
+       title = "(a) Spearman correlation") +
   framed_theme
 
 # --- RMSE-Panels ---
@@ -70,24 +70,33 @@ make_rmse_plot <- function(vt, title, show_y = FALSE) {
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 }
 
-p_rmse_area <- make_rmse_plot("Area-perc", "Normalized seasonal dynamics")
-p_rmse_norm <- make_rmse_plot("Area-normalized", "Relative open-suraface-water extent")
+p_rmse_area <- make_rmse_plot("Area-perc", "(b) Normalized seasonal dynamics")
+p_rmse_norm <- make_rmse_plot("Area-normalized", "(c) Relative open-suraface-water extent")
 
-# --- Kombiniert ---
+# # --- Kombiniert ---
+# p_combined <- (p_spearman | p_rmse_area | p_rmse_norm) +
+#   plot_layout(guides = "collect") +
+#   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
+#   theme(legend.position = "bottom",
+#         plot.margin = margin(5,3,5,3), # top,right,bottom,left
+#         plot.title = element_text(size = 12, face = "bold")
+#         ) 
+
+
 p_combined <- (p_spearman | p_rmse_area | p_rmse_norm) +
-  plot_layout(guides = "collect") +
-  plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
+  plot_layout(guides = "collect") &
   theme(legend.position = "bottom",
         plot.margin = margin(5,3,5,3), # top,right,bottom,left
         plot.title = element_text(size = 12, face = "bold")
-        ) 
+  ) 
 p_combined
 
-ggsave("T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/ecdf_validation_height_margins.png",
-       p_combined, width = 14, height = 6, dpi = 300)
+ggsave("T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/ecdf_validation_option3.tif",
+       p_combined, width = 11, height = 5.25, dpi = 300)
 
-
-
+# 1: 6
+# 2: 5.5
+# 3: 5.25
 
 
 

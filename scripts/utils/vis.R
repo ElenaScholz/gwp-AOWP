@@ -717,6 +717,86 @@ calc_shift_heatmap <- function(lakes_oi, ncl, mode = c("period", "annual"),
 
 ### Function to plot annual frequency anomalies for lake types
 # group vecotr = climate or coontinents
+# plot_annual_distribution <- function(group_vector, group_name, 
+#                                      cluster_dist, ncl, 
+#                                      start_year, end_year, 
+#                                      output_file, 
+#                                      color_ramp = colorBlindness::Blue2Orange10Steps){
+#   
+#   years <- seq(start_year, end_year)
+#   nyears <- length(years)
+#   unique_groups <- unique(group_vector)
+#   
+#   tiff(output_file, width=10, height=12.5, units="in", res=300)
+#   par(mfrow = c(length(unique_groups), 1), mar=c(4,4,2,2))
+# 
+#   
+#   
+#   for(i in seq_along(unique_groups)){
+#     
+#     lakes_oi <- which(group_vector == unique_groups[i])
+#     
+#     # Annual frequencies
+#     annual_freqs <- matrix(NaN, ncol=nyears, nrow=ncl)
+#     for(j in 1:nyears){
+#       annual_freqs[, j] <- hist(cluster_dist[lakes_oi, j],
+#                                 breaks=seq(0.5, ncl+0.5),
+#                                 plot=FALSE)$counts
+#     }
+#     
+#     # Relative anomalies (deviation from mean)
+#     annual_freqs_rel <- matrix(NaN, ncol=nyears, nrow=ncl)
+#     for(cla in 1:ncl){
+#       annual_freqs_rel[cla, ] <- annual_freqs[cla, ] - mean(annual_freqs[cla, ])
+#     }
+#     
+#     # # Color scale - GEÄNDERT
+#     # minmax <- ceiling(max(abs(range(annual_freqs_rel)))/10)*10
+#     # hist_anom_breaks <- seq(-minmax, minmax, length=50)
+#     # 
+#     # # Verwende Blue2Orange10Steps Palette
+#     # color_ramp <- color_ramp
+#     # hist_anom_ramp <- colorRamp(color_ramp)
+#     # hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
+#     # 
+#     
+#         # Color scale
+#     minmax <- ceiling(max(abs(range(annual_freqs_rel)))/10)*10
+#     hist_anom_breaks <- seq(-minmax, minmax, length=50)
+#     hist_anom_cols <- c("#FE650B","#FED474","white","#A1EFFE","#0053FE")
+#     hist_anom_ramp <- colorRamp(hist_anom_cols)
+#     hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
+#     # Heatmap
+#     image.plot(x=years, y=1:ncl, z=t(annual_freqs_rel),
+#                breaks=hist_anom_breaks, col=hist_anom_cols,
+#                xlab="", ylab="")
+#     
+#     title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1)
+#     mtext("year", side=1, line=2.2, cex=.8, font=2)
+#     mtext("frequency anomaly", side=4, line=.9, cex=.8, font=2)
+#     mtext("AOWP ", side=2, line=2.5, cex=.8, font=2)
+#     
+#     # Add counts to heatmap
+#     for(n in 1:ncl){
+#       for(m in 1:nyears){
+#         text(x=years[m], y=n, adj=c(0.5,0.5), labels=annual_freqs[n,m], cex=.8)
+#       }
+#     }
+#     
+#     # Grid lines
+#     for(n in 1:ncl){
+#       lines(x=c(start_year-3, end_year), y=rep(n,2)-.5, lwd=1, col="grey")
+#     }
+#     for(y in (start_year+0.5):(end_year+0.5)){
+#       lines(x=rep(y,2), y=c(0,ncl+1), lwd=1, col="grey")
+#     }
+#     box(lwd=2, col="black")
+#   }
+#   
+#   dev.off()
+#   message("✅ Plot saved to: ", output_file)
+# }
+
 plot_annual_distribution <- function(group_vector, group_name, 
                                      cluster_dist, ncl, 
                                      start_year, end_year, 
@@ -728,11 +808,20 @@ plot_annual_distribution <- function(group_vector, group_name,
   unique_groups <- unique(group_vector)
   
   tiff(output_file, width=10, height=12.5, units="in", res=300)
-  par(mfrow = c(length(unique_groups), 1), mar=c(4,4,2,2))
-
+  par(mfrow = c(length(unique_groups), 1))
   
   
   for(i in seq_along(unique_groups)){
+    
+    is_last <- (i == length(unique_groups))   # unterstes Panel?
+    
+    # Panels enger: oberer/unterer Rand klein; nur unterstes Panel bekommt
+    # unten mehr Platz für Jahreszahlen + "year"-Titel
+    if (is_last) {
+      par(mar = c(4, 4, 1.5, 2))
+    } else {
+      par(mar = c(0.6, 4, 1.5, 2))
+    }
     
     lakes_oi <- which(group_vector == unique_groups[i])
     
@@ -750,31 +839,26 @@ plot_annual_distribution <- function(group_vector, group_name,
       annual_freqs_rel[cla, ] <- annual_freqs[cla, ] - mean(annual_freqs[cla, ])
     }
     
-    # # Color scale - GEÄNDERT
-    # minmax <- ceiling(max(abs(range(annual_freqs_rel)))/10)*10
-    # hist_anom_breaks <- seq(-minmax, minmax, length=50)
-    # 
-    # # Verwende Blue2Orange10Steps Palette
-    # color_ramp <- color_ramp
-    # hist_anom_ramp <- colorRamp(color_ramp)
-    # hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
-    # 
-    
-        # Color scale
+    # Color scale
     minmax <- ceiling(max(abs(range(annual_freqs_rel)))/10)*10
     hist_anom_breaks <- seq(-minmax, minmax, length=50)
-    hist_anom_cols <- c("#FE650B","#FED474","white","#A1EFFE","#0053FE")
+    hist_anom_cols <- c("#B4C4D0",  "#D2DCE4" ,  "white", "#F4C17A", "#E8963A")
+    # c("#FE650B","#FED474","white","#A1EFFE","#0053FE")
     hist_anom_ramp <- colorRamp(hist_anom_cols)
     hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
-    # Heatmap
+    
+    # Heatmap — x-Achsenzahlen nur beim untersten Panel
     image.plot(x=years, y=1:ncl, z=t(annual_freqs_rel),
                breaks=hist_anom_breaks, col=hist_anom_cols,
-               xlab="", ylab="")
+               xlab="", ylab="", xaxt = if (is_last) "s" else "n")
     
     title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1)
-    mtext("year", side=1, line=2.2, cex=.8, font=2)
+    
+    # "year"-Titel nur beim untersten Panel
+    if (is_last) mtext("year", side=1, line=2.2, cex=.8, font=2)
+    
     mtext("frequency anomaly", side=4, line=.9, cex=.8, font=2)
-    mtext("Cluster #", side=2, line=2.5, cex=.8, font=2)
+    mtext("AOWP ", side=2, line=2.5, cex=.8, font=2)
     
     # Add counts to heatmap
     for(n in 1:ncl){
@@ -805,7 +889,8 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
                                xlab = "Dominant AOWP, 2014 - 2024",
                                ylab = "Dominant AOWP, 2003 - 2013",
                                cex_axis = 1.0, cex_lab = 1.2, cex_values = 0.95,
-                               mar = c(4.5, 4.8, 1, 6)) {
+                               mar = c(6, 4.8, 1, 1),
+                               legend_mar = 8) {        # <- unten mehr Platz (war c(4.5,4.8,1,6))
   normalize <- match.arg(normalize)
   
   count_mat <- matrix(0, nrow = ncl, ncol = ncl)
@@ -825,7 +910,6 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
   if (!include_diagonal) { diag(disp_count) <- NA; diag(disp_perc) <- NA }
   
   par(mar = mar)
-  # base image() respects the current fig region (image.plot does NOT)
   image(x = 1:ncl, y = 1:ncl, z = t(disp_perc), col = colors, zlim = c(0, 100),
         xlab = "", ylab = "", axes = FALSE,
         xlim = c(0.5, ncl + 0.5), ylim = c(0.5, ncl + 0.5))
@@ -844,16 +928,16 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
     text(x = j, y = i - 0.22, labels = bot, cex = cex_values * 0.85, font = 1)
   }
   
-  # Colorbar drawn separately, legend-only (this part of fields is fig-safe)
+  # Colorbar: horizontal, below the matrix
   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE,
-                     horizontal = FALSE,
-                     legend.width = 2.7,        # breiter; Default ~1.2
-                     legend.mar = 4.5,
+                     horizontal = TRUE,               # <- war FALSE
+                     legend.width = 2.7,
+                     legend.mar = legend_mar,
                      legend.args = list(text = "Share of source lakes [%]",
-                                        side = 4, line = 2.2, cex = cex_lab, font = 2))
+                                        side = 1, line = 2.2, cex = cex_lab, font = 2))
 }
 
-# Zeichnet EINE Übergangsmatrix in die AKTUELLE fig-Region (keine Colorbar).
+
 draw_change_matrix_panel <- function(cf, cl, ncl, colors,
                                      normalize = "row", include_diagonal = TRUE,
                                      percent_on_top = TRUE,
@@ -896,7 +980,6 @@ draw_change_matrix_panel <- function(cf, cl, ncl, colors,
   }
 }
 
-
 plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
                                         ncl, colors, output_file,
                                         group_name = "", ncol = 3,
@@ -904,28 +987,38 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
                                         panel_label = TRUE,
                                         cex_values = 0.7, cex_lab = 0.95, cex_axis = 0.8,
                                         legend_width = 2.7, legend_mar = 4.5,
-                                        cb_left = 0.90, ...) {
+                                        cb_bottom = 0.10,            # Höhe des Colorbar-Streifens unten
+                                        panel_mar = c(4.5, 3.5, 3.5, 1),
+                                        ...) {
   groups <- unique(group_vector)
   ng     <- length(groups)
   nrw    <- ceiling(ng / ncol)
+  n_total_lakes <- length(group_vector)
   
   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
-  
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
   
-  top <- 0.94
+  top    <- 0.94                       # oberer Rand (Platz für group_name)
+  bottom <- cb_bottom                  # untere Grenze der Panel-Fläche (darunter Colorbar)
+  band_h <- (top - bottom) / nrw       # Höhe einer Panel-Zeile
   
   for (k in seq_len(ng)) {
-    r <- ceiling(k / ncol)
-    c <- ((k - 1) %% ncol) + 1
+    r <- ceiling(k / ncol)             # Zeile
+    c <- ((k - 1) %% ncol) + 1         # Spalte
     
-    x0 <- (c - 1) / ncol * cb_left
-    x1 <-  c      / ncol * cb_left
-    y1 <- top - (r - 1) / nrw * top
-    y0 <- top -  r      / nrw * top
+    # --- Wie viele Panels sind in DIESER Zeile? (für Zentrierung der letzten Reihe) ---
+    panels_in_row <- if (r < nrw) ncol else (ng - (nrw - 1) * ncol)
+    row_offset    <- (ncol - panels_in_row) / 2 / ncol   # halbe Leerspalten -> Einrückung
+    
+    x0 <- row_offset + (c - 1) / ncol
+    x1 <- row_offset +  c      / ncol
+    y1 <- top - (r - 1) * band_h
+    y0 <- top -  r      * band_h
     
     par(fig = c(x0, x1, y0, y1), new = TRUE)
     lakes_oi <- which(group_vector == groups[k])
+    n_grp    <- length(lakes_oi)
+    pct_grp  <- 100 * n_grp / n_total_lakes
     
     draw_change_matrix_panel(
       cf = cluster_char_first[lakes_oi, 1],
@@ -933,21 +1026,32 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
       ncl = ncl, colors = colors,
       show_xlab = (r == nrw),
       show_ylab = (c == 1),
-      cex_values = cex_values, cex_lab = cex_lab, cex_axis = cex_axis, ...
+      cex_values = cex_values, cex_lab = cex_lab, cex_axis = cex_axis,
+      mar = panel_mar, ...
     )
     
-    mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
-                 groups[k], " (", length(lakes_oi), " lakes)"),
-          side = 3, line = 0.6, cex = cex_lab * 1.05, font = 2, adj = 0)
+    # Titel (fett) + zweite Zeile n / % (grau) darunter
+    mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "", groups[k]),
+          side = 3, line = 1.4, cex = cex_lab * 1.05, font = 2, adj = 0)
+    mtext(sprintf("n = %d  (%.1f%%)", n_grp, pct_grp),
+          side = 3, line = 0.3, cex = cex_lab * 0.9, font = 1, adj = 0, col = "grey30")
   }
   
-  # Gemeinsame Colorbar rechts — jetzt gleiches Layout wie plot_change_matrix
-  par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, legend_mar))
-  fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
-                     legend.width = legend_width, legend.mar = legend_mar,
+  # --- Gemeinsame Colorbar: horizontal, unten, mittig ---
+  # par(fig = c(0.30, 0.70, 0.00, cb_bottom), new = TRUE, mar = c(3.5, 1, 1, 1))
+  # fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = TRUE,
+  #                    legend.width = legend_width, legend.mar = legend_mar,
+  #                    legend.args = list(text = "Share of source lakes [%]",
+  #                                       side = 1, line = 2.2, cex = cex_lab, font = 2))
+  # Colorbar näher an die Panels: Band-Oberkante über cb_bottom hinaus,
+  # kleines mar, kleines legend.mar
+  par(fig = c(0.30, 0.70, 0.04, cb_bottom + 0.5), new = TRUE, mar = c(2, 1, 0, 1))
+  fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = TRUE,
+                     legend.width = legend_width, legend.mar = 2,
                      legend.args = list(text = "Share of source lakes [%]",
-                                        side = 4, line = 2.2, cex = cex_lab, font = 2))
+                                        side = 1, line = 2.0, cex = cex_lab, font = 2))
   
+  # Haupttitel
   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
        axes = FALSE, xlab = "", ylab = "")
@@ -956,6 +1060,112 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
   dev.off()
   message("Saved: ", output_file)
 }
+
+
+
+# Zeichnet EINE Übergangsmatrix in die AKTUELLE fig-Region (keine Colorbar).
+# draw_change_matrix_panel <- function(cf, cl, ncl, colors,
+#                                      normalize = "row", include_diagonal = TRUE,
+#                                      percent_on_top = TRUE,
+#                                      show_xlab = TRUE, show_ylab = TRUE,
+#                                      xlab = "AOWP, 2014-2024",
+#                                      ylab = "AOWP, 2003-2013",
+#                                      cex_axis = 0.8, cex_lab = 0.95, cex_values = 0.7,
+#                                      mar = c(3.5, 3.5, 2.5, 1)) {
+#   
+#   count_mat <- matrix(0, ncl, ncl)
+#   for (i in 1:ncl) for (j in 1:ncl)
+#     count_mat[i, j] <- sum(cf == i & cl == j)
+#   
+#   if (normalize == "row") {
+#     rt   <- rowSums(count_mat)
+#     perc <- count_mat / ifelse(rt == 0, NA, rt) * 100
+#   } else {
+#     perc <- count_mat / sum(count_mat) * 100
+#   }
+#   dc <- count_mat; dp <- perc
+#   if (!include_diagonal) { diag(dc) <- NA; diag(dp) <- NA }
+#   
+#   par(mar = mar)
+#   image(1:ncl, 1:ncl, t(dp), col = colors, zlim = c(0, 100),
+#         xlab = "", ylab = "", axes = FALSE,
+#         xlim = c(0.5, ncl + 0.5), ylim = c(0.5, ncl + 0.5))
+#   axis(1, at = 1:ncl, lwd = 1.5, cex.axis = cex_axis, font = 2, mgp = c(3, .5, 0))
+#   axis(2, at = 1:ncl, lwd = 1.5, cex.axis = cex_axis, font = 2, mgp = c(3, .5, 0))
+#   if (show_xlab) mtext(xlab, side = 1, line = 2.0, cex = cex_lab, font = 2)
+#   if (show_ylab) mtext(ylab, side = 2, line = 2.2, cex = cex_lab, font = 2)
+#   box(lwd = 1.5)
+#   
+#   for (i in 1:ncl) for (j in 1:ncl) {
+#     cnt <- dc[i, j]; pct <- dp[i, j]
+#     if (is.na(cnt) || cnt == 0) next
+#     top <- if (percent_on_top) paste0(round(pct, 1), "%") else as.character(cnt)
+#     bot <- if (percent_on_top) paste0("(", cnt, ")") else paste0("(", round(pct, 1), "%)")
+#     text(j, i + 0.18, top, cex = cex_values,        font = 2)
+#     text(j, i - 0.18, bot, cex = cex_values * 0.85, font = 1)
+#   }
+# }
+# 
+# 
+# plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
+#                                         ncl, colors, output_file,
+#                                         group_name = "", ncol = 3,
+#                                         width = 20, height = 14, res = 300,
+#                                         panel_label = TRUE,
+#                                         cex_values = 0.7, cex_lab = 0.95, cex_axis = 0.8,
+#                                         legend_width = 2.7, legend_mar = 4.5,
+#                                         cb_left = 0.90, ...) {
+#   groups <- unique(group_vector)
+#   ng     <- length(groups)
+#   nrw    <- ceiling(ng / ncol)
+#   
+#   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
+#   
+#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
+#   
+#   top <- 0.94
+#   
+#   for (k in seq_len(ng)) {
+#     r <- ceiling(k / ncol)
+#     c <- ((k - 1) %% ncol) + 1
+#     
+#     x0 <- (c - 1) / ncol * cb_left
+#     x1 <-  c      / ncol * cb_left
+#     y1 <- top - (r - 1) / nrw * top
+#     y0 <- top -  r      / nrw * top
+#     
+#     par(fig = c(x0, x1, y0, y1), new = TRUE)
+#     lakes_oi <- which(group_vector == groups[k])
+#     
+#     draw_change_matrix_panel(
+#       cf = cluster_char_first[lakes_oi, 1],
+#       cl = cluster_char_last[lakes_oi, 1],
+#       ncl = ncl, colors = colors,
+#       show_xlab = (r == nrw),
+#       show_ylab = (c == 1),
+#       cex_values = cex_values, cex_lab = cex_lab, cex_axis = cex_axis, ...
+#     )
+#     
+#     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
+#                  groups[k], " (", length(lakes_oi), " lakes)"),
+#           side = 3, line = 0.6, cex = cex_lab * 1.05, font = 2, adj = 0)
+#   }
+#   
+#   # Gemeinsame Colorbar rechts — jetzt gleiches Layout wie plot_change_matrix
+#   par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, legend_mar))
+#   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
+#                      legend.width = legend_width, legend.mar = legend_mar,
+#                      legend.args = list(text = "Share of source lakes [%]",
+#                                         side = 4, line = 2.2, cex = cex_lab, font = 2))
+#   
+#   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
+#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
+#        axes = FALSE, xlab = "", ylab = "")
+#   text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 1.6, font = 2)
+#   
+#   dev.off()
+#   message("Saved: ", output_file)
+# }
 
 # plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
 #                                         ncl, colors, output_file,
