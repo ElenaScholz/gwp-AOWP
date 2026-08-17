@@ -56,7 +56,7 @@ p_spearman <- ggplot(all_stats_df_subset %>% filter(value.type == "Area-perc"),
   framed_theme
 
 # --- RMSE-Panels ---
-make_rmse_plot <- function(vt, show_y = FALSE) {
+make_rmse_plot <- function(vt, title, show_y = FALSE) {
   ggplot(all_stats_df_subset %>% filter(RMSE > 0, value.type == vt),
          aes(x = RMSE, color = Dataset, linetype = Dataset)) +
     stat_ecdf(linewidth = 0.8) +
@@ -64,24 +64,27 @@ make_rmse_plot <- function(vt, show_y = FALSE) {
     scale_color_manual(values = dataset_colors) +
     scale_linetype_manual(values = dataset_linetypes) +
     y_scale +
-    labs(x = "RMSE (log scale)", y = NULL, title = facet_labels[[vt]]) +
+    labs(x = "RMSE (log scale)", y = NULL, title = title,
+         ) +
     framed_theme +
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 }
 
-p_rmse_area <- make_rmse_plot("Area-perc")
-p_rmse_norm <- make_rmse_plot("Area-normalized")
+p_rmse_area <- make_rmse_plot("Area-perc", "Normalized seasonal dynamics")
+p_rmse_norm <- make_rmse_plot("Area-normalized", "Relative open-suraface-water extent")
 
 # --- Kombiniert ---
 p_combined <- (p_spearman | p_rmse_area | p_rmse_norm) +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
-  theme(legend.position = "bottom")
-
+  theme(legend.position = "bottom",
+        plot.margin = margin(5,3,5,3), # top,right,bottom,left
+        plot.title = element_text(size = 12, face = "bold")
+        ) 
 p_combined
 
-ggsave("T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/ecdf_validation.png",
-       p_combined, width = 12, height = 4.5, dpi = 300)
+ggsave("T:/DLR-DFD/DFD-GWPComparison/Results_10percDisr/Results_10percDisr/ecdf_validation_height_margins.png",
+       p_combined, width = 14, height = 6, dpi = 300)
 
 
 
