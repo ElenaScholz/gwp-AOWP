@@ -635,175 +635,6 @@ calc_shift_heatmap <- function(lakes_oi, ncl, mode = c("period", "annual"),
   shift_heat_map <- round(shift_heat_map / length(lakes_oi) * 100, 1)
   return(shift_heat_map)
 }
-# 
-# plot_pie <- function(lakes_oi, region_name, n, ncl, lake_cols, 
-#                      cluster_char = lake_frequencies$cluster_char_total,
-#                      cex_main = 1.5, cex_legend = 1.5, cex_label = 1.5) {
-#   dummy_table <- data.frame(Var1=1:ncl, Freq=rep(0,ncl))
-#   
-#   pieDAT_full <- dummy_table
-#   
-#   for(cl in 1:ncl){
-#     pieDAT_full$Freq[cl] <- length(which(cluster_char[lakes_oi,1]==cl))
-#   }
-#   
-#   # Erweitere Plotbereich für Legende
-#   #par(mar = c(bottom, left, top, right), xpd = allows to draw outside the plot region, plt=c(left, right, bottom, top in %))
-#   par(mar=c(0, 1, 3, 1), xpd=TRUE, plt = c(0.25, 0.95, 0.1, 0.9))
-# 
-#   pie(pieDAT_full$Freq, col=lake_cols, labels="",
-#       #main=paste(region_name, " (", length(lakes_oi), " lakes)", sep=""),
-#       cex.main=cex_main, font.main=4, # title font size
-#       radius = 0.85)  # adjust radius to change pie size
-#  
-#    # for pie
-#   mtext(paste(region_name, " (", length(lakes_oi), " lakes)", sep=""), 
-#         side=3, adj = 0.6, line=-0.25, cex=cex_main, font=2)
-#   # adds subplot labels
-#   mtext(paste("(", letters[n], ")", sep=""), side=3, adj=-0.25, cex=cex_label, font=2, line = -0.05) # side = top margin, adj = 0 means left aligned
-#   
-#   # absolute positions in plot coordinates 
-#   legend(x=-2.2, y=0.7, legend=1:ncl, pch=16, pt.cex=2, col=lake_cols,
-#          ncol=2, title="Cluster number", title.adj=.5, text.font=3,
-#          bg="ivory", xpd=TRUE, cex=cex_legend)
-#   
-# 
-# }
-# 
-# 
-# ### 3. Shift heatmap calculation
-# calc_shift_heatmap <- function(lakes_oi, ncl, mode=c("period","annual"), 
-#                                year1=NULL, year2=NULL, 
-#                                cluster_char_list = lake_frequencies, cluster_dist_list = cluster_matrices) {
-#   shift_heat_map <- matrix(0, ncol=ncl, nrow=ncl)
-#   cluster_char_first <-  cluster_char_list$cluster_char_first
-#   cluster_char_last <-  cluster_char_list$cluster_char_last
-#   cluster_dist <-  cluster_dist_list$full
-#   for(i in 1:ncl){
-#     for(j in 1:ncl){
-#       if(mode=="period"){
-#         last_oi <- which(cluster_char_first[lakes_oi,1]==i &
-#                            cluster_char_last[lakes_oi,1]==j)
-#       } else if(mode=="annual"){
-#         last_oi <- which(cluster_dist[lakes_oi, year1-2002]==i &
-#                            cluster_dist[lakes_oi, year2-2002]==j)
-#       }
-#       shift_heat_map[i,j] <- shift_heat_map[i,j] + length(last_oi)
-#       if(i==j){ shift_heat_map[i,j] <- NA }
-#     }
-#   }
-#   shift_heat_map <- round(shift_heat_map/length(lakes_oi)*100,1)
-#   return(shift_heat_map)
-# }
-# 
-# ### 4. Heatmap plotting
-# plot_shift_heatmap <- function(shift_heat_map, ncl, colors, xlab, ylab, 
-#                                zlim = NULL, cex_axis = 1.0, cex_lab = 1.0, 
-#                                cex_values = 1.2) {
-#   par(mar=c(4,4,1,4))
-#   #ar(mar=c(5,5,1,4))
-#   if (is.null(zlim)) {
-#     zlim <- range(shift_heat_map, na.rm = TRUE)
-#   }
-#   # image.plot(x=1:ncl, y=1:ncl, z=t(shift_heat_map), col=colors, 
-#   #            xlab="", ylab="", axes=F, zlim=zlim)
-#   image.plot(x=1:ncl, y=1:ncl, z=t(shift_heat_map), col=colors, 
-#              xlab="", ylab="", axes=F, zlim=zlim,
-#              xlim=c(0.5, ncl+0.5), ylim=c(0.5, ncl+0.5))
-#   axis(1, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
-#   axis(2, at=1:ncl, lwd=2, lend=2, cex.axis=cex_axis, font=2, mgp=c(3,.85,0))
-#   mtext("Cluster changes [%]", side=4, line=.75, cex=cex_lab, font=2)
-#   mtext(xlab, side=1, line=2.2, cex=cex_lab, font=2)
-#   mtext(ylab, side=2, line=2.5, cex=cex_lab, font=2)
-#   box(lwd=2)
-#   for(i in 1:nrow(shift_heat_map)){
-#     for(j in 1:ncol(shift_heat_map)){
-#       text(x=j, y=i, labels=shift_heat_map[i,j], cex=cex_values)
-#     }
-#   }
-# }
-
-### Function to plot annual frequency anomalies for lake types
-# group vecotr = climate or coontinents
-# plot_annual_distribution <- function(group_vector, group_name, 
-#                                      cluster_dist, ncl, 
-#                                      start_year, end_year, 
-#                                      output_file, 
-#                                      color_ramp = colorBlindness::Blue2Orange10Steps){
-#   
-#   years <- seq(start_year, end_year)
-#   nyears <- length(years)
-#   unique_groups <- unique(group_vector)
-#   
-#   tiff(output_file, width=10, height=12.5, units="in", res=300)
-#   par(mfrow = c(length(unique_groups), 1), mar=c(4,4,2,2))
-# 
-#   
-#   
-#   for(i in seq_along(unique_groups)){
-#     
-#     lakes_oi <- which(group_vector == unique_groups[i])
-#     
-#     # Annual frequencies
-#     annual_freqs <- matrix(NaN, ncol=nyears, nrow=ncl)
-#     for(j in 1:nyears){
-#       annual_freqs[, j] <- hist(cluster_dist[lakes_oi, j],
-#                                 breaks=seq(0.5, ncl+0.5),
-#                                 plot=FALSE)$counts
-#     }
-#     
-#     # Relative anomalies (deviation from mean)
-#     annual_freqs_rel <- matrix(NaN, ncol=nyears, nrow=ncl)
-#     for(cla in 1:ncl){
-#       annual_freqs_rel[cla, ] <- annual_freqs[cla, ] - mean(annual_freqs[cla, ])
-#     }
-#     
-#     # # Color scale - GEÄNDERT
-#     # minmax <- ceiling(max(abs(range(annual_freqs_rel)))/10)*10
-#     # hist_anom_breaks <- seq(-minmax, minmax, length=50)
-#     # 
-#     # # Verwende Blue2Orange10Steps Palette
-#     # color_ramp <- color_ramp
-#     # hist_anom_ramp <- colorRamp(color_ramp)
-#     # hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
-#     # 
-#     
-#         # Color scale
-#     minmax <- ceiling(max(abs(range(annual_freqs_rel)))/10)*10
-#     hist_anom_breaks <- seq(-minmax, minmax, length=50)
-#     hist_anom_cols <- c("#FE650B","#FED474","white","#A1EFFE","#0053FE")
-#     hist_anom_ramp <- colorRamp(hist_anom_cols)
-#     hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
-#     # Heatmap
-#     image.plot(x=years, y=1:ncl, z=t(annual_freqs_rel),
-#                breaks=hist_anom_breaks, col=hist_anom_cols,
-#                xlab="", ylab="")
-#     
-#     title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1)
-#     mtext("year", side=1, line=2.2, cex=.8, font=2)
-#     mtext("frequency anomaly", side=4, line=.9, cex=.8, font=2)
-#     mtext("AOWP ", side=2, line=2.5, cex=.8, font=2)
-#     
-#     # Add counts to heatmap
-#     for(n in 1:ncl){
-#       for(m in 1:nyears){
-#         text(x=years[m], y=n, adj=c(0.5,0.5), labels=annual_freqs[n,m], cex=.8)
-#       }
-#     }
-#     
-#     # Grid lines
-#     for(n in 1:ncl){
-#       lines(x=c(start_year-3, end_year), y=rep(n,2)-.5, lwd=1, col="grey")
-#     }
-#     for(y in (start_year+0.5):(end_year+0.5)){
-#       lines(x=rep(y,2), y=c(0,ncl+1), lwd=1, col="grey")
-#     }
-#     box(lwd=2, col="black")
-#   }
-#   
-#   dev.off()
-#   message("✅ Plot saved to: ", output_file)
-# }
 
 plot_annual_distribution <- function(group_vector, group_name, 
                                      cluster_dist, ncl, 
@@ -932,8 +763,8 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
     if (is.na(cnt) || cnt == 0) next
     top <- if (percent_on_top) paste0(round(pct, 1), "%") else as.character(cnt)
     bot <- if (percent_on_top) paste0("(", cnt, ")") else paste0("(", round(pct, 1), "%)")
-    text(x = j, y = i + 0.22, labels = top, cex = cex_values,        font = 2)
-    text(x = j, y = i - 0.22, labels = bot, cex = cex_values * 0.85, font = 1)
+    text(x = j, y = i + 0.28, labels = top, cex = cex_values,        font = 2)
+    text(x = j, y = i - 0.28, labels = bot, cex = cex_values * 0.85, font = 1)
   }
   
   # Colorbar: horizontal, below the matrix
@@ -1044,16 +875,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
     mtext(sprintf("n = %d  (%.1f%%)", n_grp, pct_grp),
           side = 3, line = 0.3, cex = cex_lab * 0.9, font = 1, adj = 0, col = "grey30")
   }
-  
-  # --- Gemeinsame Colorbar: horizontal, unten, mittig ---
-  # par(fig = c(0.30, 0.70, 0.00, cb_bottom), new = TRUE, mar = c(3.5, 1, 1, 1))
-  # fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = TRUE,
-  #                    legend.width = legend_width, legend.mar = legend_mar,
-  #                    legend.args = list(text = "Share of source lakes [%]",
-  #                                       side = 1, line = 2.2, cex = cex_lab, font = 2))
-  # Colorbar näher an die Panels: Band-Oberkante über cb_bottom hinaus,
-  # kleines mar, kleines legend.mar
-  par(fig = c(0.30, 0.70, 0.04, cb_bottom + 0.5), new = TRUE, mar = c(2, 1, 0, 1))
+   par(fig = c(0.30, 0.70, 0.04, cb_bottom + 0.5), new = TRUE, mar = c(2, 1, 0, 1))
   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = TRUE,
                      legend.width = legend_width, legend.mar = 2,
                      legend.args = list(text = "Share of source lakes [%]",

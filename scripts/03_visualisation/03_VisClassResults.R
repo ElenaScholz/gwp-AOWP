@@ -513,8 +513,8 @@ custom_legend <- list(
   colors = map_cols
 )
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target.tiff"),
-     width=config$plotting_information$pdf_size$width, 
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_changedTextSizeLegendOutside.tiff"),
+     width=config$plotting_information$pdf_size$width,
      height=config$plotting_information$pdf_size$height_large,
      units = "in", res = 300)
 
@@ -542,38 +542,75 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i",
      axes=FALSE, xlab="", ylab="")
 
 text(0.03, 0.72, "(a) Global distribution of dominant AOWP transitions",
-     adj=c(0,0.5), cex=1.8, font=2)
+     adj=c(0,0.5), cex=2.25, font=2)
 text(0.03, 0.52, change_subtitle,
-     adj=c(0,0.5), cex=1.2, font=1, col="grey30")
+     adj=c(0,0.5), cex=2.0, font=1, col="grey25")
 
 
 
-# Map
-pos_map <- c(0, 1, 0.47, 0.90)
+# # Map
+# pos_map <- c(0, 1, 0.52, 0.90)
+# plot_world_map_rob(coords = coords_all,
+#                    cluster_vals = cluster_vals_all,
+#                    lake_cols = map_cols,
+#                    year_label = "",                     # kein Legendentitel
+#                    number_of_cluster = length(custom_legend$labels),
+#                    custom_legend = custom_legend,
+#                    position = pos_map,
+#                    white_world = TRUE,
+#                    legend_outside = TRUE)
+# 
+# # B heading
+# par(fig=c(0,1,0.45,0.50), new=TRUE, mar=c(0,0,0,0))
+# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+# text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=2.25, font=2)
+# 
+# # Matrix
+# 
+# # legend at the bottom
+# par(fig=c(0.28, 0.72, 0.00, 0.45), new=TRUE)
+# plot_change_matrix(
+#   cluster_char_first = lake_frequencies$cluster_char_first,
+#   cluster_char_last  = lake_frequencies$cluster_char_last,
+#   ncl = ncl, colors = matrix_cols,
+#   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
+#   cex_values = 1.8, cex_lab = 1.8, cex_axis = 1.8, mar = c(10, 4.8, 1,1), legend_mar = 6
+# )
+
+# Map  (was 0.52–0.90)
+pos_map <- c(0, 1, 0.58, 0.90)
+
 plot_world_map_rob(coords = coords_all,
                    cluster_vals = cluster_vals_all,
                    lake_cols = map_cols,
-                   year_label = "",                     # kein Legendentitel
+                   year_label = "",
                    number_of_cluster = length(custom_legend$labels),
                    custom_legend = custom_legend,
                    position = pos_map,
-                   white_world = TRUE)
+                   white_world = TRUE,
+                   legend_outside = TRUE)
 
-# B heading
-par(fig=c(0,1,0.42,0.46), new=TRUE, mar=c(0,0,0,0))
+# B heading  (was 0.45–0.50)
+par(fig=c(0,1,0.53,0.57), new=TRUE, mar=c(0,0,0,0))
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=1.8, font=2)
+text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=2.25, font=2)
 
-# Matrix
+# Matrix  (was 0.28–0.72 x 0.00–0.45) — width solved for a square box
+csi <- par("csi"); W <- 25; H <- config$plotting_information$pdf_size$height_large
+m <- c(8, 4.8, 1, 1); fig_h <- 0.51
 
-# legend at the bottom
-par(fig=c(0.34, 0.66, 0.00, 0.42), new=TRUE)
+box_h <- fig_h * H - (m[1] + m[3]) * csi
+fig_w <- (box_h + (m[2] + m[4]) * csi) / W
+
+par(fig = c(0.5 - fig_w/2, 0.5 + fig_w/2, 0, fig_h), new = TRUE)
+
 plot_change_matrix(
   cluster_char_first = lake_frequencies$cluster_char_first,
   cluster_char_last  = lake_frequencies$cluster_char_last,
   ncl = ncl, colors = matrix_cols,
   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-  cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5, mar = c(10, 4.8, 1,1)
+  cex_values = 1.8, cex_lab = 1.8, cex_axis = 1.8,
+  mar = m, legend_mar = 6
 )
 
 dev.off()
@@ -590,9 +627,9 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
 par(fig=c(0,1,0.88,1), new=TRUE, mar=c(0,0,0,0))
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
 text(0.03, 0.68, "Global distribution of dominant AOWP transitions",
-     adj=c(0,0.5), cex=1.8, font=2)
+     adj=c(0,0.5), cex=2.25, font=2)
 text(0.03, 0.42, change_subtitle,
-     adj=c(0,0.5), cex=1.2, font=1, col="grey30")
+     adj=c(0,0.5), cex=2.0, font=1, col="grey30")
 
 # Map below the heading
 pos_map <- c(0, 1, 0, 0.87)
