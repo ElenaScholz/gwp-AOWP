@@ -111,7 +111,8 @@ lake_cols_list <- create_lake_color_palette(config = config,
 
 heatmap_colors <- create_lake_color_palette(config, color_ramp = (colorBlindness::Blue2Orange10Steps))
 # matrix_cols <- colorRampPalette(c("#5A6B7B", "#8A97A6", "#C7CDD4", "#F0EAE2", "#F4C17A", "#E8963A"))(100)
-matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#DCE0DE", "#F0E8DC", "#F4C17A", "#E8963A"))(100)
+# matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#DCE0DE", "#F0E8DC", "#F4C17A", "#E8963A"))(100)
+matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#DCE0DE","#ffdfb0", "#F4C17A", "#E8963A"))(100)
 lake_cols <- lake_cols_list$lake_cols
 # Calculate number of years per lake
 number_of_years <- nrow(normalized_lake_dat) / nrow(coords)
@@ -144,7 +145,7 @@ cluster_matrices <- reorganize_cluster_assignments(clas, nrow(coords), number_of
 
 # Save results (using the reorganized data)
 write.table(cluster_matrices$full,
-            file = file.path(config$ROOT, "/" ,config$output_directories$for_data,"AnnualClassResults.txt"),
+            file = file.path(config$ROOT, "/" ,config$output_directories$for_data,"03_AnnualClassResults.txt"),
             quote = FALSE, row.names = FALSE,
             col.names = config$plotting_information$start_year:config$plotting_information$end_year, append = FALSE)
 
@@ -168,7 +169,7 @@ tiff(
   paste0(
     config$ROOT, "/", 
     config$output_directories$for_plots,
-    "/03.1.NL_White_Class_results_full.tif"
+    "/03.1.NL_White_Class_results_full_textSize_legendOutside.tif"
   ),
   width = config$plotting_information$pdf_size$width,
   height = config$plotting_information$pdf_size$height_large,
@@ -203,7 +204,7 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
 
 text(0.03, 0.5,
      "(a) Annual Open-Surface-Water Patterns (AOWPs)",
-     adj=c(0,0.5), cex=1.8, font=2)
+     adj=c(0,0.5), cex=2.25, font=2)
 # ----------------------------------------------------
 # Top row: clusters 1-5
 # ----------------------------------------------------
@@ -219,11 +220,12 @@ for (cla in 1:5) {
     x_ticks = time_axis$x_ticks,
     x_labs = time_axis$x_labs,
     clas = clas,
+    dominant_cluster=lake_frequencies$cluster_char_total[,1],
     normalized_lake_dat = normalized_lake_dat,
     centroids = cnts,
     lake_colors = lake_cols,
     bg_color="white",
-    mar=c(3.5,2.5,2.5,1),
+    mar=c(4.5,2.5,5,1),
     show_x_ticks=TRUE,
     show_x_title=FALSE,
     show_y_label=(cla==1),
@@ -240,7 +242,7 @@ for (cla in 6:10) {
   
   pos <- c(0.03 + 0.19*(cla-6),
            0.03 + 0.19*(cla-5),
-           0.54, 0.72)
+           0.54, 0.74)
   
   plot_class_panel(
     cla = cla,
@@ -249,11 +251,12 @@ for (cla in 6:10) {
     x_ticks = time_axis$x_ticks,
     x_labs = time_axis$x_labs,
     clas = clas,
+    dominant_cluster=lake_frequencies$cluster_char_total[,1],
     normalized_lake_dat = normalized_lake_dat,
     centroids = cnts,
     lake_colors = lake_cols,
     bg_color="white",
-    mar=c(4.5,2.5,2.5,1),
+    mar=c(4.5,2.5,5,1),
     show_x_ticks=TRUE,
     show_x_title=TRUE,
     show_y_label=(cla==6),
@@ -275,7 +278,7 @@ plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1),
 
 text(0.03, 0.5,
      "(b) Global distribution of dominant AOWPs",
-     adj=c(0,0.5), cex=1.8, font=2)
+     adj=c(0,0.5), cex=2.25, font=2)
 
 
 # ------------------- Map -------------------
@@ -378,43 +381,7 @@ dev.off()
 source('scripts/utils/vis.R')
 
 # ---- Plot Lake Variability ----
-# source('scripts/utils/vis.R')
-# 
-# # Adjustments of Colorbar
-# breaks_var <- seq(min(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)-.5,
-#                   max(lake_frequencies$cluster_char_total[,2], na.rm=TRUE)+.5)
-# 
-# lake_cols_var <- rgb(lake_cols_list$ramp_dev(seq(0, 1, length = length(breaks_var)-1)), max = 255)
-# lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(10)
-# lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
-# lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
-# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.2.NL_White_Class_variability_full.tiff"),
-#      width = config$plotting_information$pdf_size$width,
-#      height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
-# 
-# plot(0,0,type="n",xlim=c(-180,180),ylim=c(-60,90),axes=FALSE,
-#      yaxs="i",xaxs="i",xlab="",ylab="",cex.axis=1.5)
-# 
-# pos_map <- c(0, 1, 0, 1)
-# 
-# var_vals <- sort(unique(lake_frequencies$cluster_char_total[,2])) # add the percentage as well
-# 
-# # Kurzer Titel + schlichte Zahlen-Labels (Details gehen in die Caption)
-# custom_legend_var <- list(
-#   labels = as.character(var_vals),
-#   colors = lake_cols_var_lajolla[seq_along(var_vals)]
-# )
-# 
-# plot_world_map_rob(coords = coords,
-#                    cluster_vals = lake_frequencies$cluster_char_total[,2],
-#                    lake_cols = lake_cols_var_lajolla,
-#                    year_label = "AOWP variability", # Number of additional different AOWPs classified per water body (beyond the dominant AOWP over the 22-year period)
-#                    number_of_cluster = length(var_vals),
-#                    custom_legend = custom_legend_var,
-#                    position = pos_map,
-#                    white_world = TRUE)
-# 
-# dev.off()
+
 
 source('scripts/utils/vis.R')
 
@@ -425,7 +392,7 @@ lake_cols_var_ylgnbu <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlGnBu"))(
 lake_cols_var_lajolla <- scico::scico(10, palette = "lajolla", direction = -1)
 lake_cols_var_oslo <- scico::scico(10, palette = "oslo", direction = -1)
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.2.NL_White_Class_variability_full.tiff"),
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots, "/03.2.NL_White_Class_variability_full_textSize_legendOutside.tiff"),
      width = config$plotting_information$pdf_size$width,
      height = config$plotting_information$pdf_size$height_small, units = "in", res = 300)
 
@@ -448,17 +415,31 @@ custom_legend_var <- list(
   colors = lake_cols_var_lajolla[seq_along(var_vals)]
 )
 
-# Two-line title: bold on top, plain smaller subtitle below
+
 title_var <- paste0(
-  "<span style='font-size:16pt'>",
+  "<span style='font-size:24pt'>",
   "**Number of additional different<br>",
   "AOWPs per water body**",
   "</span><br>",
-  "<span style='font-size:12pt;font-weight:normal'>",
+  "<span style='font-size:18pt;font-weight:normal'>",
   "(beyond the dominant AOWP<br>",
   "over the 22-year period)",
   "</span>"
 )
+# 
+# title_var <- paste0(
+#   "<span style='font-size:24pt'>",
+#   "**Additional AOWPS<br>",
+#   "per water body**",
+#   "</span><br>",
+#   "<span style='font-size:18pt;font-weight:normal'>",
+#   "(beyond the dominant AOWP<br>",
+#   "over the 22-year period)",
+#   "</span>"
+# )
+
+# title_var <- "**Additional AOWPs per water body**</span><br>
+# <span style='font-size:24pt;font-weight:normal'>(beyond the dominant AOWP, 2003–2024)"
 
 plot_world_map_rob(coords = coords,
                    cluster_vals = lake_frequencies$cluster_char_total[,2],
@@ -467,7 +448,9 @@ plot_world_map_rob(coords = coords,
                    number_of_cluster = length(var_vals),
                    custom_legend = custom_legend_var,
                    position = pos_map,
-                   white_world = TRUE)
+                   white_world = TRUE,
+                   textsize_legend = 24,
+                   legend_outside = TRUE)
 
 dev.off()
 

@@ -165,10 +165,10 @@ get_time_axis <- function(){
               x_labs = x_labs))
 }
 
-plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas, 
+plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas, dominant_cluster,
                              normalized_lake_dat, centroids, lake_colors,
                              bg_color = NULL, bg_alpha = 1, 
-                             mar = c(3.5, 2.5, 2, 1),
+                             mar = c(3.5, 2.5, 2, 1), # the total space available above the box. c(bottom, left, top, right)
                              show_x_ticks = TRUE,
                              show_x_title = FALSE,
                              show_y_label = TRUE,
@@ -176,17 +176,12 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
   
   par(fig = position, mar = mar, new = TRUE)
   
-  # # Empty plot
-  # plot(0, 0,
-  #      type = "n",
-  #      xlim = range(x_recs),
-  #      ylim = c(0,1),
-  #      xlab = "",
-  #      ylab = "",
-  #      axes = FALSE,
-  #      main = paste("AOWP ", cla, sep=""),
-  #      cex.main = 1.2,
-  #      cex.axis = 1.1)
+  #'
+  #' Infos zu mar: 
+  #'  mar[1] = bottom - month number axis (1) , "Month of year" at line 2.8
+  #'  mad[2] = left - y-tick labels "rel. extent" at line = 2.2
+  #'  mar[3] = top - AOWP n at line  = 1.9 percentage at line 0.1
+  #'  mar[4] = right - but here nothing as labels = FALSE
   
   plot(0, 0,
        type = "n",
@@ -198,26 +193,27 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
        cex.axis = 1.1)
   
   
-  class_n <- sum(clas == cla)
-  class_percentage <- 100 * class_n / length(clas)
+  class_n <- sum(dominant_cluster == cla)
+
+  class_percentage <- 100 * class_n / length(dominant_cluster)
   
   # Title
   mtext(
     paste0("AOWP ", cla),
     side = 3,
-    line = 1.0,
-    cex = 1.5,
+    line = 2.6, # control gap between plot and text (was 1)
+    cex = 2.0, # text size
     font = 2
   )
   
   # Percentage underneath title
   mtext(
-    paste0(round(class_percentage, 1), "% of water bodies"),
+    paste0(round(class_percentage, 2), "% of water bodies"),
     side = 3,
-    line = 0.1,
-    cex = 1.15,
+    line = 0.6, # control gap between plot and text (Was 0.1)
+    cex = 2.0, # text size
     font = 1,
-    col = "grey35"
+    col = "grey25"
   )
   
   # Background
@@ -266,8 +262,8 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
          las = 3,
          mgp = c(3,0.5,0),
          tcl = 0,
-         cex.axis = 1.0,
-         font.axis = 2)
+         cex.axis = 1.8,
+         font.axis = 1)
   }
   
   
@@ -277,8 +273,8 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
     mtext("Month of year",
           side = 1,
           line = 2.8,
-          cex = 1.2,
-          font = 2)
+          cex = 1.8,
+          font = 1)
   }
   
   
@@ -291,14 +287,14 @@ plot_class_panel <- function(cla, position, x_recs, x_ticks, x_labs, clas,
          lwd = 1.5,
          lend = 2,
          tcl = 0.4,
-         cex.axis = 1.0,
-         font.axis = 2)
+         cex.axis = 1.8,
+         font.axis = 1)
     
     mtext("rel. extent",
           side = 2,
-          line = 2.2,
-          cex = 1.2,
-          font = 2)
+          line = 3.0,
+          cex = 1.8,
+          font = 1)
     
   } else {
     
@@ -392,7 +388,7 @@ plot_world_map <- function(coords, cluster_vals, lake_cols, year_label,
 plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label, 
                                number_of_cluster, custom_par = NULL, 
                                custom_legend = NULL, position = NULL,
-                               label_start = 1, white_world = FALSE) {
+                               label_start = 1, white_world = FALSE, legend_outside = FALSE, textsize_legend = 24) {
   library(sf)
   library(ggplot2)
   library(rnaturalearth)
@@ -439,16 +435,28 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
     coord_sf(expand = FALSE) +
     theme_void() +
     theme(
-      legend.position = "inside",
-      legend.position.inside = c(0.00, 0.5),
-      legend.justification = c(0, 0.5),
-      legend.background = element_rect(fill = "white", color = "white", linewidth = 0.6),
+      legend.background = element_rect(fill = NA, color = NA, linewidth = 0.6),
       legend.margin = margin(6, 10, 6, 10),
-      legend.title = ggtext::element_markdown(hjust = 0, size = 16, lineheight = 1.2),
-      legend.text  = ggtext::element_markdown(size = 13, lineheight = 1.1),
-      legend.key.size = unit(2.75, "lines"),
+      legend.title = ggtext::element_markdown(hjust = 0, size = 24, lineheight = 1.2, face = "bold"),
+      legend.text  = ggtext::element_markdown(size = textsize_legend, lineheight = 1.1),
+      legend.key.size = unit(3, "lines"),
       legend.key = element_rect(fill = "white", color = NA)
     )
+  
+  # Legend placement: outside reserves space (no overlap), inside overlays the map
+  if (legend_outside) {
+    p <- p + theme(
+      legend.position = "left",
+      legend.justification = "center",
+      legend.box.spacing = unit(0,"pt")
+    )
+  } else {
+    p <- p + theme(
+      legend.position = "inside",
+      legend.position.inside = c(0.00, 0.5),
+      legend.justification = c(0, 0.5)
+    )
+  }
 
   
   # Add color scale
