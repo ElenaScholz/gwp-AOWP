@@ -112,7 +112,7 @@ lake_cols_list <- create_lake_color_palette(config = config,
 heatmap_colors <- create_lake_color_palette(config, color_ramp = (colorBlindness::Blue2Orange10Steps))
 # matrix_cols <- colorRampPalette(c("#5A6B7B", "#8A97A6", "#C7CDD4", "#F0EAE2", "#F4C17A", "#E8963A"))(100)
 # matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#DCE0DE", "#F0E8DC", "#F4C17A", "#E8963A"))(100)
-matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#DCE0DE","#ffdfb0", "#F4C17A", "#E8963A"))(100)
+matrix_cols <- colorRampPalette(c("#EAF0F4", "#D2DCE4", "#B4C4D0", "#B1C6D9","#ffdfb0", "#F4C17A", "#E8963A"))(100)
 lake_cols <- lake_cols_list$lake_cols
 # Calculate number of years per lake
 number_of_years <- nrow(normalized_lake_dat) / nrow(coords)
@@ -488,10 +488,6 @@ write.table(classification_summary_df_new,
 source('scripts/utils/vis.R')
 
 
-# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03_NL_white_Class_change_target.tiff"),
-#      width=config$plotting_information$pdf_size$width, 
-#      height=config$plotting_information$pdf_size$height_large,   # large! (Karte + Matrix brauchen Höhe)
-#      units = "in", res = 300)
 
 # ================= Shared data prep =================
 base_cols <- colorRampPalette(heatmap_colors$lake_cols)(100)
@@ -513,7 +509,7 @@ custom_legend <- list(
   colors = map_cols
 )
 
-tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_changedTextSizeLegendOutside.tiff"),
+tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_changedTextSize.tiff"),
      width=config$plotting_information$pdf_size$width,
      height=config$plotting_information$pdf_size$height_large,
      units = "in", res = 300)
@@ -525,17 +521,6 @@ pct_changed <- 100 * n_changed / n_total
 change_subtitle <- sprintf("%d of %d water bodies changed (%.1f%%)",
                            n_changed, n_total, pct_changed)
 # # A heading
-# par(fig=c(0,1,0.92,1), new=TRUE, mar=c(0,0,0,0))
-# # par(fig=c(0,1,0.90,0.94), new=TRUE, mar=c(0,0,0,0))
-# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-# text(0.03, 0.5, "(a) Global distribution of dominant AOWP transitions", adj=c(0,0.5), cex=1.8, font=2)
-# # add second smaller line in grey "N of M lakes changed (xx %)"
-# 
-# # grey subtitle line
-# par(fig=c(0,1,0.85,0.905), new=TRUE, mar=c(0,0,0,0))
-# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-# text(0.03, 0.5, change_subtitle,
-#      adj=c(0,0.5), cex=1.2, font=1, col="grey30")
 
 par(fig=c(0,1,0.88,1), new=TRUE, mar=c(0,0,0,0))
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i",
@@ -547,57 +532,36 @@ text(0.03, 0.52, change_subtitle,
      adj=c(0,0.5), cex=2.0, font=1, col="grey25")
 
 
+# 
+# Karte
+pos_map <- c(0, 1, 0.47, 0.90)
+plot_world_map_rob(coords = coords_all,
+                   cluster_vals = cluster_vals_all,
+                   lake_cols = map_cols,
+                   year_label = "",                     # kein Legendentitel
+                   number_of_cluster = length(custom_legend$labels),
+                   custom_legend = custom_legend,
+                   position = pos_map,
+                   white_world = TRUE,
+                   legend_outside = FALSE)
 
-# # Map
-# pos_map <- c(0, 1, 0.52, 0.90)
-# plot_world_map_rob(coords = coords_all,
-#                    cluster_vals = cluster_vals_all,
-#                    lake_cols = map_cols,
-#                    year_label = "",                     # kein Legendentitel
-#                    number_of_cluster = length(custom_legend$labels),
-#                    custom_legend = custom_legend,
-#                    position = pos_map,
-#                    white_world = TRUE,
-#                    legend_outside = TRUE)
-# 
-# # B heading
-# par(fig=c(0,1,0.45,0.50), new=TRUE, mar=c(0,0,0,0))
-# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-# text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=2.25, font=2)
-# 
-# # Matrix
-# 
-# # legend at the bottom
-# par(fig=c(0.28, 0.72, 0.00, 0.45), new=TRUE)
+# B heading
+par(fig=c(0,1,0.42,0.46), new=TRUE, mar=c(0,0,0,0))
+
+plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
+text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=2.25, font=2)
+
+# par(fig=c(0.3, 0.70, 0.00, 0.42), new=TRUE)
 # plot_change_matrix(
 #   cluster_char_first = lake_frequencies$cluster_char_first,
 #   cluster_char_last  = lake_frequencies$cluster_char_last,
 #   ncl = ncl, colors = matrix_cols,
 #   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-#   cex_values = 1.8, cex_lab = 1.8, cex_axis = 1.8, mar = c(10, 4.8, 1,1), legend_mar = 6
+#   cex_values = 1.8, cex_lab = 1.8, cex_axis = 1.8, mar = c(10, 4.8, 1,1), legend_mar = 8
 # )
-
-# Map  (was 0.52–0.90)
-pos_map <- c(0, 1, 0.58, 0.90)
-
-plot_world_map_rob(coords = coords_all,
-                   cluster_vals = cluster_vals_all,
-                   lake_cols = map_cols,
-                   year_label = "",
-                   number_of_cluster = length(custom_legend$labels),
-                   custom_legend = custom_legend,
-                   position = pos_map,
-                   white_world = TRUE,
-                   legend_outside = TRUE)
-
-# B heading  (was 0.45–0.50)
-par(fig=c(0,1,0.53,0.57), new=TRUE, mar=c(0,0,0,0))
-plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
-text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=2.25, font=2)
-
-# Matrix  (was 0.28–0.72 x 0.00–0.45) — width solved for a square box
+# Matrix — Breite so berechnet, dass die Box quadratisch wird
 csi <- par("csi"); W <- 25; H <- config$plotting_information$pdf_size$height_large
-m <- c(8, 4.8, 1, 1); fig_h <- 0.51
+m <- c(10, 4.8, 1, 1); fig_h <- 0.42
 
 box_h <- fig_h * H - (m[1] + m[3]) * csi
 fig_w <- (box_h + (m[2] + m[4]) * csi) / W
@@ -609,10 +573,10 @@ plot_change_matrix(
   cluster_char_last  = lake_frequencies$cluster_char_last,
   ncl = ncl, colors = matrix_cols,
   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-  cex_values = 1.8, cex_lab = 1.8, cex_axis = 1.8,
-  mar = m, legend_mar = 6
+  cex_values = 1.4, cex_lab = 1.7, cex_axis = 1.8,
+  mar = m, legend_mar = 8.5
 )
-
+# 
 dev.off()
 
 
@@ -643,11 +607,34 @@ plot_world_map_rob(coords = coords_all,
                    white_world = TRUE)
 dev.off()
 
+# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_MATRIX.tiff"),
+#      width=12, height=12, units = "in", res = 300, compression = "lzw")
+# 
+# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
+# par(fig=c(0.08, 0.92, 0.06, 0.94), new=TRUE)   # Matrix füllt nicht das ganze Blatt
+# 
+# plot_change_matrix(
+#   cluster_char_first = lake_frequencies$cluster_char_first,
+#   cluster_char_last  = lake_frequencies$cluster_char_last,
+#   ncl = ncl, colors = matrix_cols,
+#   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
+#   cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5,
+#   mar = c(9, 6, 1, 1), legend_mar = 1
+# )
+# dev.off()
 tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_MATRIX.tiff"),
      width=12, height=12, units = "in", res = 300, compression = "lzw")
 
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
-par(fig=c(0.08, 0.92, 0.06, 0.94), new=TRUE)   # Matrix füllt nicht das ganze Blatt
+
+# Breite so berechnet, dass die Box quadratisch wird
+csi <- par("csi"); W <- 12; H <- 12
+m <- c(11, 6, 1, 1); fig_b <- 0.06; fig_t <- 0.94
+
+box_h <- (fig_t - fig_b) * H - (m[1] + m[3]) * csi
+fig_w <- (box_h + (m[2] + m[4]) * csi) / W
+
+par(fig = c(0.5 - fig_w/2, 0.5 + fig_w/2, fig_b, fig_t), new = TRUE)
 
 plot_change_matrix(
   cluster_char_first = lake_frequencies$cluster_char_first,
@@ -655,16 +642,14 @@ plot_change_matrix(
   ncl = ncl, colors = matrix_cols,
   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
   cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5,
-  mar = c(9, 6, 1, 1), legend_mar = 1
+  mar = m, legend_mar = 4.5
 )
 dev.off()
-
 # ---- Pie Charts changes of climate regions between first and second period ----
 
 source("scripts/utils/vis.R")
 
 # Palette wie gehabt (ggf. deine aufgehellte Variante hier einsetzen)
-matrix_cols <- colorRampPalette(heatmap_colors$lake_cols)(100)
 
 # ---- Transition matrices per climate zone ----
 plot_change_matrix_by_group(
@@ -676,13 +661,15 @@ plot_change_matrix_by_group(
   group_name         = "Transition matrices per climate zone",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03.4_NL_ChangeMatrix_ClimateZones.tiff"),
-  cb_bottom          = 0.12,      # schmaler Streifen unten (NICHT 0.8)
+  height = 18,
+  cb_bottom          = 0.08,      # schmaler Streifen unten (NICHT 0.8)
+  panel_mar = c(3.5, 4.0, 3.0, 0.5),
   legend_width       = 4,       # Dicke der Bar (NICHT 10)
   legend_mar         = 3,         # Abstand nach unten (NICHT 10)
   ncol               = 3,
-  cex_values         = 1.0,
+  cex_values         = 1.3,
   cex_lab            = 1.5,
-  cex_axis           = 1.5
+  cex_axis           = 1.3
 )
 
 
@@ -696,13 +683,15 @@ plot_change_matrix_by_group(
   group_name         = "Transition matrices per continent",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03.4_NL_ChangeMatrix_Continents.tiff"),
-  cb_bottom          = 0.12,      # schmaler Streifen unten (NICHT 0.8)
+  height = 17,
+  cb_bottom          = 0.08,      # schmaler Streifen unten (NICHT 0.8)
+  panel_mar = c(3.5, 4.0, 3.0, 0.5),
   legend_width       = 4,       # Dicke der Bar (NICHT 10)
   legend_mar         = 3,         # Abstand nach unten (NICHT 10)
   ncol               = 3,
-  cex_values         = 1.0,
+  cex_values         = 1.3,
   cex_lab            = 1.5,
-  cex_axis           = 1.5
+  cex_axis           = 1.3
 )
 
 # 

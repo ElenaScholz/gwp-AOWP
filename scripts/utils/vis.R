@@ -453,8 +453,9 @@ plot_world_map_rob <- function(coords, cluster_vals, lake_cols, year_label,
   } else {
     p <- p + theme(
       legend.position = "inside",
-      legend.position.inside = c(0.00, 0.5),
+      legend.position.inside = c(-0.03, 0.5),
       legend.justification = c(0, 0.5)
+      # legend.justification = c(1, 0.5)
     )
   }
 
@@ -645,22 +646,15 @@ plot_annual_distribution <- function(group_vector, group_name,
   years <- seq(start_year, end_year)
   nyears <- length(years)
   unique_groups <- unique(group_vector)
-  
   tiff(output_file, width=10, height=12.5, units="in", res=300)
   par(mfrow = c(length(unique_groups), 1))
   
-  
   for(i in seq_along(unique_groups)){
     
-    is_last <- (i == length(unique_groups))   # unterstes Panel?
+    is_last <- (i == length(unique_groups))
     
-    # Panels enger: oberer/unterer Rand klein; nur unterstes Panel bekommt
-    # unten mehr Platz für Jahreszahlen + "year"-Titel
-    if (is_last) {
-      par(mar = c(4, 4, 1.5, 2))
-    } else {
-      par(mar = c(0.6, 4, 1.5, 2))
-    }
+    # gleiche Ränder für alle Panels -> gleich hohe Boxen
+    par(mar = c(2.8, 4, 1.5, 2))
     
     lakes_oi <- which(group_vector == unique_groups[i])
     
@@ -691,18 +685,18 @@ plot_annual_distribution <- function(group_vector, group_name,
                breaks=hist_anom_breaks, col=hist_anom_cols,
                xlab="", ylab="", xaxt = if (is_last) "s" else "n")
     
-    title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1)
+    title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1.6)
     
     # "year"-Titel nur beim untersten Panel
-    if (is_last) mtext("year", side=1, line=2.2, cex=.8, font=2)
+    if (is_last) mtext("year", side=1, line=1.6, cex=1.2, font=1)
     
-    mtext("frequency anomaly", side=4, line=.9, cex=.8, font=2)
-    mtext("AOWP ", side=2, line=2.5, cex=.8, font=2)
+    mtext("frequency anomaly", side=4, line=.9, cex=0.9, font=1)
+    mtext("AOWP ", side=2, line=2.5, cex=0.9, font=1)
     
     # Add counts to heatmap
     for(n in 1:ncl){
       for(m in 1:nyears){
-        text(x=years[m], y=n, adj=c(0.5,0.5), labels=annual_freqs[n,m], cex=.8)
+        text(x=years[m], y=n, adj=c(0.5,0.5), labels=annual_freqs[n,m], cex=1.05)
       }
     }
     
@@ -754,8 +748,8 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
         xlim = c(0.5, ncl + 0.5), ylim = c(0.5, ncl + 0.5))
   axis(1, at = 1:ncl, lwd = 2, lend = 2, cex.axis = cex_axis, font = 2, mgp = c(3, .85, 0))
   axis(2, at = 1:ncl, lwd = 2, lend = 2, cex.axis = cex_axis, font = 2, mgp = c(3, .85, 0))
-  mtext(xlab, side = 1, line = 2.6, cex = cex_lab, font = 2)
-  mtext(ylab, side = 2, line = 2.8, cex = cex_lab, font = 2)
+  mtext(xlab, side = 1, line = 2.6, cex = cex_lab, font = 1)
+  mtext(ylab, side = 2, line = 2.8, cex = cex_lab, font = 1)
   box(lwd = 2)
   
   for (i in 1:ncl) for (j in 1:ncl) {
@@ -772,8 +766,8 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
                      horizontal = TRUE,               # <- war FALSE
                      legend.width = 2.7,
                      legend.mar = legend_mar,
-                     legend.args = list(text = "Share of source lakes [%]",
-                                        side = 1, line = 2.2, cex = cex_lab, font = 2))
+                     legend.args = list(text = "Percent [%]",
+                                        side = 1, line = 2.2, cex = cex_lab, font = 1))
 }
 
 
@@ -841,6 +835,12 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
   bottom <- cb_bottom                  # untere Grenze der Panel-Fläche (darunter Colorbar)
   band_h <- (top - bottom) / nrw       # Höhe einer Panel-Zeile
   
+  # --- quadratische Panels: benötigte fig-Breite aus der Panelhöhe ableiten ---
+  csi     <- par("csi")
+  box_h   <- band_h * height - (panel_mar[1] + panel_mar[3]) * csi
+  fig_w   <- (box_h + (panel_mar[2] + panel_mar[4]) * csi) / width
+  fig_w   <- min(fig_w, 1/ncol)        # nie breiter als die Zelle
+  
   for (k in seq_len(ng)) {
     r <- ceiling(k / ncol)             # Zeile
     c <- ((k - 1) %% ncol) + 1         # Spalte
@@ -849,8 +849,15 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
     panels_in_row <- if (r < nrw) ncol else (ng - (nrw - 1) * ncol)
     row_offset    <- (ncol - panels_in_row) / 2 / ncol   # halbe Leerspalten -> Einrückung
     
-    x0 <- row_offset + (c - 1) / ncol
-    x1 <- row_offset +  c      / ncol
+    # x0 <- row_offset + (c - 1) / ncol
+    # x1 <- row_offset +  c      / ncol
+    # y1 <- top - (r - 1) * band_h
+    # y0 <- top -  r      * band_h
+    # 
+    x_mid <- row_offset + (c - 0.5) / ncol
+    x0 <- x_mid - fig_w/2
+    x1 <- x_mid + fig_w/2
+    
     y1 <- top - (r - 1) * band_h
     y0 <- top -  r      * band_h
     
@@ -878,14 +885,14 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
    par(fig = c(0.30, 0.70, 0.04, cb_bottom + 0.5), new = TRUE, mar = c(2, 1, 0, 1))
   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = TRUE,
                      legend.width = legend_width, legend.mar = 2,
-                     legend.args = list(text = "Share of source lakes [%]",
-                                        side = 1, line = 2.0, cex = cex_lab, font = 2))
+                     legend.args = list(text = "Percent [%]",
+                                        side = 1, line = 2.0, cex = cex_lab, font = 1))
   
   # Haupttitel
   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
        axes = FALSE, xlab = "", ylab = "")
-  text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 1.6, font = 2)
+  text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 2.25, font = 2)
   
   dev.off()
   message("Saved: ", output_file)
@@ -985,7 +992,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
 #   par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, legend_mar))
 #   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
 #                      legend.width = legend_width, legend.mar = legend_mar,
-#                      legend.args = list(text = "Share of source lakes [%]",
+#                      legend.args = list(text = "Percent [%]",
 #                                         side = 4, line = 2.2, cex = cex_lab, font = 2))
 #   
 #   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
@@ -1044,7 +1051,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
 #   par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, 4))
 #   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
 #                      legend.width = 2, legend.mar = 4,
-#                      legend.args = list(text = "Share of source lakes [%]",
+#                      legend.args = list(text = "Percent [%]",
 #                                         side = 4, line = 2.2, cex = 1.0, font = 2))
 #   
 #   # Haupttitel
