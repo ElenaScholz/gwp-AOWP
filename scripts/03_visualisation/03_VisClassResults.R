@@ -658,10 +658,11 @@ plot_change_matrix_by_group(
   cluster_char_last  = lake_frequencies$cluster_char_last,
   ncl                = ncl,
   colors             = matrix_cols,
-  group_name         = "Transition matrices per climate zone",
+  # group_name         = "Transition matrices per climate zone",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03.4_NL_ChangeMatrix_ClimateZones.tiff"),
-  height = 18,
+  height = 17,
+  width = 21,
   cb_bottom          = 0.08,      # schmaler Streifen unten (NICHT 0.8)
   panel_mar = c(3.5, 4.0, 3.0, 0.5),
   legend_width       = 4,       # Dicke der Bar (NICHT 10)
@@ -680,10 +681,10 @@ plot_change_matrix_by_group(
   cluster_char_last  = lake_frequencies$cluster_char_last,
   ncl                = ncl,
   colors             = matrix_cols,
-  group_name         = "Transition matrices per continent",
+  # group_name         = "Transition matrices per continent",
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03.4_NL_ChangeMatrix_Continents.tiff"),
-  height = 17,
+  height = 16,
   cb_bottom          = 0.08,      # schmaler Streifen unten (NICHT 0.8)
   panel_mar = c(3.5, 4.0, 3.0, 0.5),
   legend_width       = 4,       # Dicke der Bar (NICHT 10)

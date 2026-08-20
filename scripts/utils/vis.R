@@ -831,7 +831,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
   
-  top    <- 0.94                       # oberer Rand (Platz für group_name)
+  top    <- 0.99                       # oberer Rand (Platz für group_name)
   bottom <- cb_bottom                  # untere Grenze der Panel-Fläche (darunter Colorbar)
   band_h <- (top - bottom) / nrw       # Höhe einer Panel-Zeile
   
@@ -839,6 +839,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
   csi     <- par("csi")
   box_h   <- band_h * height - (panel_mar[1] + panel_mar[3]) * csi
   fig_w   <- (box_h + (panel_mar[2] + panel_mar[4]) * csi) / width
+  message("fig_w benötigt: ", round(fig_w, 3), " / verfügbar: ", round(1/ncol, 3))
   fig_w   <- min(fig_w, 1/ncol)        # nie breiter als die Zelle
   
   for (k in seq_len(ng)) {
@@ -862,9 +863,16 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
     y0 <- top -  r      * band_h
     
     par(fig = c(x0, x1, y0, y1), new = TRUE)
+    # lakes_oi <- which(group_vector == groups[k])
+    # n_grp    <- length(lakes_oi)
+    # pct_grp  <- 100 * n_grp / n_total_lakes
+    
     lakes_oi <- which(group_vector == groups[k])
     n_grp    <- length(lakes_oi)
-    pct_grp  <- 100 * n_grp / n_total_lakes
+    n_chg    <- sum(cluster_char_first[lakes_oi, 1] != cluster_char_last[lakes_oi, 1])
+    pct_chg  <- 100 * n_chg / n_grp
+    
+    
     
     draw_change_matrix_panel(
       cf = cluster_char_first[lakes_oi, 1],
@@ -879,7 +887,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
     # Titel (fett) + zweite Zeile n / % (grau) darunter
     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "", groups[k]),
           side = 3, line = 1.4, cex = cex_lab * 1.05, font = 2, adj = 0)
-    mtext(sprintf("n = %d  (%.1f%%)", n_grp, pct_grp),
+    mtext(sprintf("n = %d; changed = (%.1f%%)", n_grp, pct_chg),
           side = 3, line = 0.3, cex = cex_lab * 0.9, font = 1, adj = 0, col = "grey30")
   }
    par(fig = c(0.30, 0.70, 0.04, cb_bottom + 0.5), new = TRUE, mar = c(2, 1, 0, 1))
@@ -888,12 +896,12 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
                      legend.args = list(text = "Percent [%]",
                                         side = 1, line = 2.0, cex = cex_lab, font = 1))
   
-  # Haupttitel
-  par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
-  plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
-       axes = FALSE, xlab = "", ylab = "")
-  text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 2.25, font = 2)
-  
+  # # Haupttitel
+  # par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
+  # plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
+  #      axes = FALSE, xlab = "", ylab = "")
+  # text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 2.25, font = 2)
+  # 
   dev.off()
   message("Saved: ", output_file)
 }
