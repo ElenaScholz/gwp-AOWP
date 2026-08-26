@@ -1,7 +1,6 @@
-# DLR-GWP-PCA
-
+# gwp-AOWP
 Analysis pipeline for classifying the seasonal dynamics of global water bodies
-(Annual Open-Water Patterns, AOWPs) from the DLR Global WaterPack (GWP) time
+(Annual Open-Water Patterns, AOWPs) from the (German Aerospeace Center/DLR Global WaterPack (GWP) time
 series, using k-means cluster analysis.
 
 # Folder Structure
