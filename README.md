@@ -75,12 +75,12 @@ For further help, see the [renv documentation](https://rstudio.github.io/renv/ar
 
 # Data Folder Structure
 gwp-aowp-data
-│   ├── Input/  
+│   └── Input/  
 │   │   ├── 00_coordinates_8247/
 │   │   ├── *Folders for preprocessed gwp timeseries*
 │   │   ├── 05_timeseries_8247_rm2902/
 │   │   ├── gwp_HylaksWithClimateZone.gpkg  
-│   ├── CluDat/
+│   └── CluDat/
 │   │   ├── Points_Cont.txt
 │   │   ├── Points_Climate.txt
 │   │   ├── coordinates_longitude_only.txt
@@ -91,27 +91,27 @@ gwp-aowp-data
 │   │   ├── area_combination_month.txt
 │   │   ├── area_combination.txt
 │   │   ├── all_coordinates_complete.txt
-│   │   ├── cla_runs
+│   │   └── cla_runs
 │   │   │   ├── kmn_2.cla
 │   │   │   ├── kmn_2.cnt
 │   │   │   ├── kmn_3.cla
 │   │   │   ├── kmn_3.cnt
 │   │   │   ├── kmn_x.cla
-│   │   │   ├── kmn_x.cnt
-│   ├── CluDatOutput/  
+│   │   │   └── kmn_x.cnt
+│   └── CluDatOutput/  
 │   │   ├── kmns_cla
 │   │   │   ├── kmns_cla\kmns_cla_2.txt
 │   │   │   ├── kmns_cla\kmns_cla_3.txt
 │   │   │   ├── kmns_cla\kmns_cla_...txt
-│   │   │   ├── kmns_cla\kmns_cla_15.txt
-│   │   ├── plots
-│   │   ├── CLA_DAT_full.dat
-│   │   ├── CLA_DAT_full_withMetaData.dat
+│   │   │   └── kmns_cla\kmns_cla_15.txt
+│   │   └── plots
+│   │   └── CLA_DAT_full.dat
+│   │   └── CLA_DAT_full_withMetaData.dat
 │   │   ├── data
 │   │   │   ├── 03_AnnualClassResults.txt
 │   │   │   ├── AnnualClassResults.txt
 │   │   │   ├── KMN_LakeClass_results.txt
-│   │   │   ├── KMN_LakeClass_results_new.txt
+└   └   └   └── KMN_LakeClass_results_new.txt
 
 
 # Preprocessing
