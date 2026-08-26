@@ -8,10 +8,8 @@ project_root/
 ├──── 01_prepareClusterAnalysis  
 ├──── 02_Clusteranalysis  
 ├──── 03_Visualizatitons  
-├──── 04_InformationForPaper
+├──── 04_InformationForPaper  
 ├── utils/  
-├── data/  
-├──── HERE WE CAN STORE A SUBSET MAYBE ? OR WE UPLOAD A LINK TO DOWNLOAD THE DATA  
 └── docs/  
 
 # Environment setup (renv)
@@ -75,6 +73,46 @@ A healthy environment will report **no issues**. If there are discrepancies, run
 
 For further help, see the [renv documentation](https://rstudio.github.io/renv/articles/renv.html).
 
+# Data Folder Structure
+gwp-aowp-data
+│   ├── Input/  
+│   │   ├── 00_coordinates_8247/
+│   │   ├── *Folders for preprocessed gwp timeseries*
+│   │   ├── 05_timeseries_8247_rm2902/
+│   │   ├── gwp_HylaksWithClimateZone.gpkg  
+│   ├── CluDat/
+│   │   ├── Points_Cont.txt
+│   │   ├── Points_Climate.txt
+│   │   ├── coordinates_longitude_only.txt
+│   │   ├── coordinates_latitude_only.txt
+│   │   ├── complete_name_vec.txt
+│   │   ├── area_combination_withPrefix.txt
+│   │   ├── area_combination_month_withPrefix.txt
+│   │   ├── area_combination_month.txt
+│   │   ├── area_combination.txt
+│   │   ├── all_coordinates_complete.txt
+│   │   ├── cla_runs
+│   │   │   ├── kmn_2.cla
+│   │   │   ├── kmn_2.cnt
+│   │   │   ├── kmn_3.cla
+│   │   │   ├── kmn_3.cnt
+│   │   │   ├── kmn_x.cla
+│   │   │   ├── kmn_x.cnt
+│   ├── CluDatOutput/  
+│   │   ├── kmns_cla
+│   │   │   ├── kmns_cla\kmns_cla_2.txt
+│   │   │   ├── kmns_cla\kmns_cla_3.txt
+│   │   │   ├── kmns_cla\kmns_cla_...txt
+│   │   │   ├── kmns_cla\kmns_cla_15.txt
+│   │   ├── plots
+│   │   ├── CLA_DAT_full.dat
+│   │   ├── CLA_DAT_full_withMetaData.dat
+│   │   ├── data
+│   │   │   ├── 03_AnnualClassResults.txt
+│   │   │   ├── AnnualClassResults.txt
+│   │   │   ├── KMN_LakeClass_results.txt
+│   │   │   ├── KMN_LakeClass_results_new.txt
+
 
 # Preprocessing
 Preprocessing transforms the raw timeseries data into ready to use time series for further analyses.
@@ -135,6 +173,10 @@ All files are written to `CluDat/`, space-separated, decimal point `.`.
 | `area_combination_withPrefix.txt` | Daily matrix — with `prefix_id` and `Year` columns |
 | `area_combination_month.txt` | Monthly average matrix — values only, no headers |
 | `area_combination_month_withPrefix.txt` | Monthly average matrix — with `prefix_id` and `Year` columns |
+
+## 01-4_add_ClimateZonesAndContinents.R
+
+Prerequesite: gwp_HylaksWithClimateZone.gpkg - spatial join of Köppen-Geiger climate zones with all GWP coordinates
 
 ### Configuration
 

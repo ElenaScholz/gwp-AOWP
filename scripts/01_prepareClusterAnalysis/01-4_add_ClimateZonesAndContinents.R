@@ -12,7 +12,7 @@ library(dplyr)
 
 # ---- Configuration ----
 config <- list(
-  gpkg_file        = "T:/DLR-DFD/PCA-Analysis/gwp_HylaksWithClimateZone.gpkg",
+  gpkg_file        = "T:/DLR-DFD/PCA-Analysis/Input/gwp_HylaksWithClimateZone.gpkg",
   coords_file      = "T:/DLR-DFD/PCA-Analysis/CluDat/all_coordinates_complete.txt",
   output_climate   = "T:/DLR-DFD/PCA-Analysis/CluDat/Points_Climate.txt",
   output_location  = "T:/DLR-DFD/PCA-Analysis/CluDat/Points_Cont.txt",

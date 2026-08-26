@@ -113,7 +113,7 @@ write.table(out_dat_byYear,file=path_cla_dat_full,col.names=FALSE,row.names=FALS
 write.table(final_output,file=path_cla_dat_meta,col.names=FALSE,row.names=FALSE,quote=FALSE)
 
 
- #==== Wird nicht genutzt
+ #==== not used
 
 #== STEP 6
 ## read coordinates
