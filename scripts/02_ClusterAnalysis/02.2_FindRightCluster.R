@@ -8,12 +8,14 @@ library(fields)
 library(clusterSim)
 
 
-# ---- Configuration ---- 
+# ---- Configuration ----
 config <- list(
-  ROOT = "T:/DLR-DFD/PCA-Analysis",
+  # EDIT THIS: set to your local project root
+  ROOT = "path-to-your-gwpAOWP-folder",
   folder_and_files = list(
     input_normalized_lake_mat = "CluDatOutput/CLA_DAT_full.dat",
     folder_for_cnts = "CluDat/cla_runs/kmn_",
+    output_folder_for_cla = "CluDatOutput/kmns_cla/kmns_cla_",
     data_separator = ""
   )
 )
@@ -23,51 +25,11 @@ load_input_matrix <- function(path) {
 
 folder_for_cnts = paste0(config$ROOT, "/", config$folder_and_files$folder_for_cnts)
 
-#setwd(config$working_directory)
 source("scripts/utils/helperfunctions.R")
 cla_dat_path = paste0(config$ROOT,"/", config$folder_and_files$input_normalized_lake_mat)
 CLA_DAT <- load_input_matrix(cla_dat_path, sep = "")
-# Vorbereitung
 results <- vector("list", 15)
 clas_all <- matrix(NaN, nrow=nrow(CLA_DAT), ncol=15)
-
-# 
-# calculate_cluster_assignment <- function(CLA_DAT, k, folder_cnt, method = c("euclidean", "manhattan")) {
-#   # match.arg ensures only valid method is used
-#   method <- match.arg(method)
-#   
-#   # Load centroids (365 × k)
-#   cnts <- as.matrix(read.table(paste0(folder_cnt, k, ".cnt")))
-#   
-#   # Make sure CLA_DAT is a matrix for faster ops
-#   CLA_DAT <- as.matrix(CLA_DAT)
-#   # Initialize distance matrix: rows = data points, cols = centroids
-#   dist_mat <- matrix(0, nrow = nrow(CLA_DAT), ncol = ncol(cnts))
-#   
-#   # Debugging: Schauen Sie sich die Dimensionen an
-#   cat("CLA_DAT dimensions:", dim(CLA_DAT), "\n")
-#   cat("cnts dimensions:", dim(cnts), "\n")
-#   cat("Distance matrix dimensions:", dim(dist_mat), "\n")
-# 
-#   # Compute distances:
-#   if (method == "euclidean") {
-#     # squared Euclidean distances: (x - y)^2
-#     # dist[i,j] = distance of row i to centroid j
-#     dist_mat <- sapply(1:ncol(cnts), function(j) {
-#       rowSums((CLA_DAT - cnts[, j])^2)
-#     })
-#   
-#   } else if (method == "manhattan") {
-#     dist_mat <- sapply(1:ncol(cnts), function(j) {
-#       rowSums(abs(CLA_DAT - cnts[, j]))
-#     })
-#   } 
-# 
-#   # Assign cluster: index of minimum distance for each row
-#   assignments <- max.col(-dist_mat, ties.method = "first")
-# 
-#   return(assignments)
-# }
 
 library(ClusterR)
 
@@ -95,10 +57,9 @@ calculate_cluster_assignment <- function(CLA_DAT, k, folder_cnt,
     assignments <- max.col(-dist_mat, ties.method = "first")
     
   } else if (method == "euclidean_kmeans") {
-      # Direkter kmeans-Aufruf
     kmn_res <- kmeans(CLA_DAT, centers = t(cnts), iter.max = iter.max, nstart = nstart, algorithm = "Lloyd")
-    assignments <- kmn_res$cluster  # Direkt die Zuweisungen zurückgeben  
-  
+    assignments <- kmn_res$cluster
+
   }
   
   return(assignments)
@@ -106,21 +67,10 @@ calculate_cluster_assignment <- function(CLA_DAT, k, folder_cnt,
 
 
 eukl_dist <- vector("list", 15)
+output_folder_for_cla <- paste0(config$ROOT, "/", config$folder_and_files$output_folder_for_cla)
 
 for (l in 2:15) {
-  # eucl_assignments <- calculate_cluster_assignment(
-  #   CLA_DAT,
-  #   l,
-  #   config$folder_and_files$folder_for_cnts,
-  #   method = "euclidean"   # "euclidean" or "manhattan" or "euclidean_kmeans"
-  # )
-  # eukl_dist[[l]] <- eucl_assignments
-  # 
-  # write.table(eucl_assignments, paste0("T:/DLR/Analysis2/PCA/output/02_eucl_cla/eucl_cla_",l,".txt"), sep = "",
-  #             row.names = FALSE, col.names = FALSE)
-  # 
-  
-  
+
   eucl_kmeans_assignments <- calculate_cluster_assignment(
     CLA_DAT,
     l,
@@ -128,28 +78,7 @@ for (l in 2:15) {
     method = "euclidean_kmeans" ,
     iter.max = 200, nstart = 10  )
   eukl_dist[[l]] <- eucl_kmeans_assignments
-  
-  write.table(eucl_kmeans_assignments, paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/kmns_cla/kmns_cla_",l,".txt"), sep = "",
+
+  write.table(eucl_kmeans_assignments, paste0(output_folder_for_cla, l, ".txt"), sep = "",
               row.names = FALSE, col.names = FALSE)
-  
-  
-  # mnh_assignments <- calculate_cluster_assignment(
-  #   CLA_DAT,
-  #   l,
-  #   config$folder_and_files$folder_for_cnts,
-  #   method = "manhattan"   # "euclidean" or "manhattan" or "euclidean_kmeans"
-  # )
-  # eukl_dist[[l]] <- mnh_assignments
-  
-#   write.table(mnh_assignments, paste0("T:/DLR/Analysis2/PCA/output/02_mnh_cla/mnh_cla_",l,".txt"), sep = "",
-#               row.names = FALSE, col.names = FALSE)
  }
-
-
-
-k <- 10
-
-# drei Cluster-Zuweisungen laden
-#eucl_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_eucl_cla/eucl_cla_", k, ".txt"))[,1])
-#kmns_assignments <- as.numeric(read.table(paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/kmns_cla/kmns_cla_", k, ".txt"))[,1])
-#mnh_assignments <- as.numeric(read.table(paste0("T:/DLR/Analysis2/PCA/output/02_mnh_cla/mnh_cla_", k, ".txt"))[,1])

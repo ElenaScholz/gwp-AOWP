@@ -44,37 +44,39 @@ source("scripts/utils/helperfunctions.R")
 # ---- Configuration ----
 
 config <- list(
-  # The overall working directory this file is then set to
-  working_dir = "T:/DLR-DFD/PCA-Analysis/",
+  # EDIT THIS: set to your local project root
+  ROOT = "path-to-your-gwpAOWP-folder/",
   # The overall input folder containing all datasets for the cluster analysis - (all files generated in the 00.X_Scripts)
-  input_folder   = "T:/DLR-DFD/PCA-Analysis/CluDat", #"T:/DLR/Analysis2/Input/GWP/03_timeseries_8247_cor/",
-  
+  input_folder   = "CluDat",
+
   # Information needed to read the lake area file and write the output
   normalizing_lakes = list(
     # The file name of the Area file generated in Script 00.4 -> IMPORTANT use the one with the sample information (called _withPrefix.txt)
     area_file = "area_combination_withPrefix.txt",
     # the folder where the final normalized dataset will ne stored
-    output_folder  = "T:/DLR-DFD/PCA-Analysis/CluDatOutput",
+    output_folder  = "CluDatOutput",
     # the name of the files (one with and one without the Metadata / Prefixes)
     normalized_lake_area = "CLA_DAT_full.dat",
     normalized_lake_area_with_MetaData = "CLA_DAT_full_withMetaData.dat",
-    # Defining the csv seperator 
-    csv_sep_raw_data = " " 
+    # Defining the csv seperator
+    csv_sep_raw_data = " "
   ),
   # Information needed to generate the sample datasets for each latitude nand
   lat_sample_lakes = list(
     # filename of the coodinated file with latitude and longitude information
     coordinate_file =  "all_coordinates_complete.txt",
     # where the files will be saved
-    output_folder = "07_latitude_bins/CLA_DAT_",#"output/01_Iterators/CLA_DAT_",
-    # Defining the csv seperator 
+    output_folder = "07_latitude_bins/CLA_DAT_",
+    # Defining the csv seperator
     csv_sep_coordinates  = ";"
   )
 )
 
-# ---- Start Processing ---- 
+config$input_folder <- paste0(config$ROOT, config$input_folder)
+config$normalizing_lakes$output_folder <- paste0(config$ROOT, config$normalizing_lakes$output_folder)
+config$lat_sample_lakes$output_folder <- paste0(config$ROOT, config$lat_sample_lakes$output_folder)
 
-#setwd(config$working_dir)
+# ---- Start Processing ----
 
 #== STEP 1
 ## read raw data, rows: 18 years * x-lakes, columns: 365 days

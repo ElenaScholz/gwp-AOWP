@@ -11,14 +11,19 @@ library(tools)   # for file_path_sans_ext
 source("scripts/utils/helperfunctions.R")
 # ---- Configuration ----
 config <- list(
-  input_folder   = "T:/DLR-DFD/PCA-Analysis/Input/03_timeseries_8247_cor/",
-  output_folder  = "T:/DLR-DFD/PCA-Analysis/Input/04_timeseries_8247_allDates",
+  # EDIT THIS: set to your local project root
+  ROOT           = "path-to-your-gwpAOWP-folder/",
+  input_folder   = "Input/03_timeseries_8247_cor/",
+  output_folder  = "Input/04_timeseries_8247_allDates",
   start_date     = "2003-01-01",
   end_date       = "2024-12-31",
   output_suffix  = "_allDates",
   csv_sep        = ";",
   file_format    = "txt"
 )
+
+config$input_folder  <- paste0(config$ROOT, config$input_folder)
+config$output_folder <- paste0(config$ROOT, config$output_folder)
 
 
 ifelse(!dir.exists(file.path(config$output_folder)),

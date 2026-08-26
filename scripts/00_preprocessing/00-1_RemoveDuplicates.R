@@ -42,20 +42,25 @@ source("scripts/utils/99_TSA_customfunctions.R")
 
 
 config <- list(
+  # EDIT THIS: set to your local project root
+  ROOT = "path-to-your-gwpAOWP-folder/",
   folder_information = list(
-    timeseries_input_folder = "T:/DLR-DFD/PCA-Analysis/Input/01_timeseries_8247/",
-    timeseries_preliminary_results = "T:/DLR-DFD/PCA-Analysis/Input/02_timeseries_8247_preliminary/",
-    output_folder_for_corrected_ts = "T:/DLR-DFD/PCA-Analysis/Input/03_timeseries_8247_cor/"
+    timeseries_input_folder = "Input/01_timeseries_8247/",
+    timeseries_preliminary_results = "Input/02_timeseries_8247_preliminary/",
+    output_folder_for_corrected_ts = "Input/03_timeseries_8247_cor/"
   ),
   file_pattern = "h",  # pattern for input timeseries files
   sep = ";",
-  summary_log_file = "T:/DLR-DFD/PCA-Analysis/Input/00-1_RemoveDuplicates_summary_log.txt",
-  
+  summary_log_file = "Input/00-1_RemoveDuplicates_summary_log.txt",
+
   analysis_information = list(
     start_year = 2003,
     end_year   = 2024
   )
 )
+
+config$folder_information <- lapply(config$folder_information, function(p) paste0(config$ROOT, p))
+config$summary_log_file <- paste0(config$ROOT, config$summary_log_file)
 
 
 # Paths and file names:
@@ -78,9 +83,8 @@ pattern <- config$file_pattern
 
 
 sep = config$sep
-# Quarantine
-jail <- config$folder_information$timeseries_preliminary_results  # Zwischenfolder - die mehrfach da sind ??? 
-#"D:/00_GWP/02_Reservoirs/02_TimeSat-Reservoirs/01_Results/Seasonality/JAIL/"
+# Quarantine folder for lakes that are duplicated across MODIS tiles
+jail <- config$folder_information$timeseries_preliminary_results
 
 # Define output summary log file
 summary_file <- config$summary_log_file
@@ -159,7 +163,7 @@ for (l in 1:length(files)) {
   write.table(files[[l]], file = paste0(opath, fl[l]), row.names = F,
               quote = F, append = F, sep = sep)
 }
-fl <- list.files(path = opath, pattern = pattern)  # <- opath statt ipath
+fl <- list.files(path = opath, pattern = pattern)  # note: reading from opath, not ipath
 
 #===================== PART 2 and 3  ==============================
 # PART 2: Find duplicate Lakes between Modis Tiles

@@ -119,31 +119,24 @@ get_most_frequent_lake_Cluster <- function(cluster_matrices){
   
   for(i in 1:nrow(cluster_matrices$full)){
     ## frequency analysis using table funtion for entire, first and last period
-    # Häufigste Klassenzuordnung (Cluster)
-    # 
-    # Anzahl unterschiedlicher Klassen, die dieser See jemals hatte
     lake_count_total <- as.data.frame(table(cluster_matrices$full[i,]))
     lake_count_first <- as.data.frame(table(cluster_matrices$first_period[i,]))
     lake_count_last <- as.data.frame(table(cluster_matrices$second_period[i,]))
-    
-    ## Clusterify lakes by max Cluster assignement 
-    ## Hier wird die am häufigsten auftretende Klasse (Cluster) gewählt → „Dominant Cluster“ eines Sees.
+
+    ## Clusterify lakes by max Cluster assignement
     cluster_char[i,1] <- as.integer(as.vector(lake_count_total$Var1[which(lake_count_total$Freq==max(lake_count_total$Freq))[1]]))
     cluster_char_first[i,1] <- as.integer(as.vector(lake_count_first$Var1[which(lake_count_first$Freq==max(lake_count_first$Freq))[1]]))
     cluster_char_last[i,1] <- as.integer(as.vector(lake_count_last$Var1[which(lake_count_last$Freq==max(lake_count_last$Freq))[1]]))
     ## number of different cluster assignments
-    ## Zusätzlich wird gezählt, wie viele unterschiedliche Cluster ein See über die Zeit „durchlaufen“ hat.
     cluster_char[i,2] <- length(unique(cluster_matrices$full[i,]))
     cluster_char_first[i,2] <- length(unique(cluster_matrices$first_period[i,]))
     cluster_char_last[i,2] <- length(unique(cluster_matrices$second_period[i,]))
   }
-  
+
   ## reduce Number of different lake types by 1.
-  ## Offensichtlich wird die Anzahl „Seen-Typen“ um 1 reduziert 
-  ##– vermutlich um den Fall „nur ein Cluster“ als „0 Wechsel“ zu zählen.
   cluster_char[,2] <- cluster_char[,2]-1
-  
-  # 20.04.2026 die 2 Zeilen unten eingefügt - es könnte sein, dass hier ein Fehler in den Seezuordnungen stattgefunden hat. 
+
+  # 2026-04-20: the two lines below were added since the lake assignments may have contained an error here.
   cluster_char_first[,2] <- cluster_char_first[,2]-1
   cluster_char_last[,2] <- cluster_char_last[,2]-1
   
@@ -653,7 +646,7 @@ plot_annual_distribution <- function(group_vector, group_name,
     
     is_last <- (i == length(unique_groups))
     
-    # gleiche Ränder für alle Panels -> gleich hohe Boxen
+    # same margins for all panels -> equal box heights
     par(mar = c(2.8, 4, 1.5, 2))
     
     lakes_oi <- which(group_vector == unique_groups[i])
@@ -680,14 +673,14 @@ plot_annual_distribution <- function(group_vector, group_name,
     hist_anom_ramp <- colorRamp(hist_anom_cols)
     hist_anom_cols <- rgb(hist_anom_ramp(seq(0, 1, length=length(hist_anom_breaks)-1)), max=255)
     
-    # Heatmap — x-Achsenzahlen nur beim untersten Panel
+    # Heatmap — x-axis numbers only on the bottom panel
     image.plot(x=years, y=1:ncl, z=t(annual_freqs_rel),
                breaks=hist_anom_breaks, col=hist_anom_cols,
                xlab="", ylab="", xaxt = if (is_last) "s" else "n")
     
     title(paste(unique_groups[i], " (", length(lakes_oi), " lakes)", sep=""), cex.main=1.6)
     
-    # "year"-Titel nur beim untersten Panel
+    # "year" title only on the bottom panel
     if (is_last) mtext("year", side=1, line=1.6, cex=1.2, font=1)
     
     mtext("frequency anomaly", side=4, line=.9, cex=0.9, font=1)
@@ -723,7 +716,7 @@ plot_change_matrix <- function(cluster_char_first, cluster_char_last, ncl,
                                ylab = "Dominant AOWP, 2003 - 2013",
                                cex_axis = 1.0, cex_lab = 1.2, cex_values = 0.95,
                                mar = c(6, 4.8, 1, 1),
-                               legend_mar = 8) {        # <- unten mehr Platz (war c(4.5,4.8,1,6))
+                               legend_mar = 8) {        # <- more space at the bottom (was c(4.5,4.8,1,6))
   normalize <- match.arg(normalize)
   
   count_mat <- matrix(0, nrow = ncl, ncol = ncl)
@@ -820,53 +813,45 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
                                         panel_label = TRUE,
                                         cex_values = 0.7, cex_lab = 0.95, cex_axis = 0.8,
                                         legend_width = 2.7, legend_mar = 4.5,
-                                        cb_bottom = 0.10,            # Höhe des Colorbar-Streifens unten
+                                        cb_bottom = 0.10,            # height of the colorbar strip at the bottom
                                         panel_mar = c(4.5, 3.5, 3.5, 1),
                                         ...) {
   groups <- unique(group_vector)
   ng     <- length(groups)
   nrw    <- ceiling(ng / ncol)
   n_total_lakes <- length(group_vector)
-  
+
   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
-  
-  top    <- 0.99                       # oberer Rand (Platz für group_name)
-  bottom <- cb_bottom                  # untere Grenze der Panel-Fläche (darunter Colorbar)
-  band_h <- (top - bottom) / nrw       # Höhe einer Panel-Zeile
-  
-  # --- quadratische Panels: benötigte fig-Breite aus der Panelhöhe ableiten ---
+
+  top    <- 0.99                       # top margin (space for group_name)
+  bottom <- cb_bottom                  # bottom edge of the panel area (colorbar goes below)
+  band_h <- (top - bottom) / nrw       # height of one panel row
+
+  # --- square panels: derive the required fig width from the panel height ---
   csi     <- par("csi")
   box_h   <- band_h * height - (panel_mar[1] + panel_mar[3]) * csi
   fig_w   <- (box_h + (panel_mar[2] + panel_mar[4]) * csi) / width
-  message("fig_w benötigt: ", round(fig_w, 3), " / verfügbar: ", round(1/ncol, 3))
-  fig_w   <- min(fig_w, 1/ncol)        # nie breiter als die Zelle
-  
+  message("fig_w required: ", round(fig_w, 3), " / available: ", round(1/ncol, 3))
+  fig_w   <- min(fig_w, 1/ncol)        # never wider than the cell
+
   for (k in seq_len(ng)) {
-    r <- ceiling(k / ncol)             # Zeile
-    c <- ((k - 1) %% ncol) + 1         # Spalte
-    
-    # --- Wie viele Panels sind in DIESER Zeile? (für Zentrierung der letzten Reihe) ---
+    r <- ceiling(k / ncol)             # row
+    c <- ((k - 1) %% ncol) + 1         # column
+
+    # --- how many panels are in THIS row? (for centering the last row) ---
     panels_in_row <- if (r < nrw) ncol else (ng - (nrw - 1) * ncol)
-    row_offset    <- (ncol - panels_in_row) / 2 / ncol   # halbe Leerspalten -> Einrückung
-    
-    # x0 <- row_offset + (c - 1) / ncol
-    # x1 <- row_offset +  c      / ncol
-    # y1 <- top - (r - 1) * band_h
-    # y0 <- top -  r      * band_h
-    # 
+    row_offset    <- (ncol - panels_in_row) / 2 / ncol   # half-empty columns -> indent
+
     x_mid <- row_offset + (c - 0.5) / ncol
     x0 <- x_mid - fig_w/2
     x1 <- x_mid + fig_w/2
-    
+
     y1 <- top - (r - 1) * band_h
     y0 <- top -  r      * band_h
-    
+
     par(fig = c(x0, x1, y0, y1), new = TRUE)
-    # lakes_oi <- which(group_vector == groups[k])
-    # n_grp    <- length(lakes_oi)
-    # pct_grp  <- 100 * n_grp / n_total_lakes
-    
+
     lakes_oi <- which(group_vector == groups[k])
     n_grp    <- length(lakes_oi)
     n_chg    <- sum(cluster_char_first[lakes_oi, 1] != cluster_char_last[lakes_oi, 1])
@@ -884,7 +869,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
       mar = panel_mar, ...
     )
     
-    # Titel (fett) + zweite Zeile n / % (grau) darunter
+    # bold title + second line n / % (grey) underneath
     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "", groups[k]),
           side = 3, line = 1.4, cex = cex_lab * 1.05, font = 2, adj = 0)
     mtext(sprintf("n = %d; changed = (%.1f%%)", n_grp, pct_chg),
@@ -895,179 +880,7 @@ plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluste
                      legend.width = legend_width, legend.mar = 2,
                      legend.args = list(text = "Percent [%]",
                                         side = 1, line = 2.0, cex = cex_lab, font = 1))
-  
-  # # Haupttitel
-  # par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
-  # plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
-  #      axes = FALSE, xlab = "", ylab = "")
-  # text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 2.25, font = 2)
-  # 
+
   dev.off()
   message("Saved: ", output_file)
 }
-
-
-
-# Zeichnet EINE Übergangsmatrix in die AKTUELLE fig-Region (keine Colorbar).
-# draw_change_matrix_panel <- function(cf, cl, ncl, colors,
-#                                      normalize = "row", include_diagonal = TRUE,
-#                                      percent_on_top = TRUE,
-#                                      show_xlab = TRUE, show_ylab = TRUE,
-#                                      xlab = "AOWP, 2014-2024",
-#                                      ylab = "AOWP, 2003-2013",
-#                                      cex_axis = 0.8, cex_lab = 0.95, cex_values = 0.7,
-#                                      mar = c(3.5, 3.5, 2.5, 1)) {
-#   
-#   count_mat <- matrix(0, ncl, ncl)
-#   for (i in 1:ncl) for (j in 1:ncl)
-#     count_mat[i, j] <- sum(cf == i & cl == j)
-#   
-#   if (normalize == "row") {
-#     rt   <- rowSums(count_mat)
-#     perc <- count_mat / ifelse(rt == 0, NA, rt) * 100
-#   } else {
-#     perc <- count_mat / sum(count_mat) * 100
-#   }
-#   dc <- count_mat; dp <- perc
-#   if (!include_diagonal) { diag(dc) <- NA; diag(dp) <- NA }
-#   
-#   par(mar = mar)
-#   image(1:ncl, 1:ncl, t(dp), col = colors, zlim = c(0, 100),
-#         xlab = "", ylab = "", axes = FALSE,
-#         xlim = c(0.5, ncl + 0.5), ylim = c(0.5, ncl + 0.5))
-#   axis(1, at = 1:ncl, lwd = 1.5, cex.axis = cex_axis, font = 2, mgp = c(3, .5, 0))
-#   axis(2, at = 1:ncl, lwd = 1.5, cex.axis = cex_axis, font = 2, mgp = c(3, .5, 0))
-#   if (show_xlab) mtext(xlab, side = 1, line = 2.0, cex = cex_lab, font = 2)
-#   if (show_ylab) mtext(ylab, side = 2, line = 2.2, cex = cex_lab, font = 2)
-#   box(lwd = 1.5)
-#   
-#   for (i in 1:ncl) for (j in 1:ncl) {
-#     cnt <- dc[i, j]; pct <- dp[i, j]
-#     if (is.na(cnt) || cnt == 0) next
-#     top <- if (percent_on_top) paste0(round(pct, 1), "%") else as.character(cnt)
-#     bot <- if (percent_on_top) paste0("(", cnt, ")") else paste0("(", round(pct, 1), "%)")
-#     text(j, i + 0.18, top, cex = cex_values,        font = 2)
-#     text(j, i - 0.18, bot, cex = cex_values * 0.85, font = 1)
-#   }
-# }
-# 
-# 
-# plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
-#                                         ncl, colors, output_file,
-#                                         group_name = "", ncol = 3,
-#                                         width = 20, height = 14, res = 300,
-#                                         panel_label = TRUE,
-#                                         cex_values = 0.7, cex_lab = 0.95, cex_axis = 0.8,
-#                                         legend_width = 2.7, legend_mar = 4.5,
-#                                         cb_left = 0.90, ...) {
-#   groups <- unique(group_vector)
-#   ng     <- length(groups)
-#   nrw    <- ceiling(ng / ncol)
-#   
-#   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
-#   
-#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
-#   
-#   top <- 0.94
-#   
-#   for (k in seq_len(ng)) {
-#     r <- ceiling(k / ncol)
-#     c <- ((k - 1) %% ncol) + 1
-#     
-#     x0 <- (c - 1) / ncol * cb_left
-#     x1 <-  c      / ncol * cb_left
-#     y1 <- top - (r - 1) / nrw * top
-#     y0 <- top -  r      / nrw * top
-#     
-#     par(fig = c(x0, x1, y0, y1), new = TRUE)
-#     lakes_oi <- which(group_vector == groups[k])
-#     
-#     draw_change_matrix_panel(
-#       cf = cluster_char_first[lakes_oi, 1],
-#       cl = cluster_char_last[lakes_oi, 1],
-#       ncl = ncl, colors = colors,
-#       show_xlab = (r == nrw),
-#       show_ylab = (c == 1),
-#       cex_values = cex_values, cex_lab = cex_lab, cex_axis = cex_axis, ...
-#     )
-#     
-#     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
-#                  groups[k], " (", length(lakes_oi), " lakes)"),
-#           side = 3, line = 0.6, cex = cex_lab * 1.05, font = 2, adj = 0)
-#   }
-#   
-#   # Gemeinsame Colorbar rechts — jetzt gleiches Layout wie plot_change_matrix
-#   par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, legend_mar))
-#   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
-#                      legend.width = legend_width, legend.mar = legend_mar,
-#                      legend.args = list(text = "Percent [%]",
-#                                         side = 4, line = 2.2, cex = cex_lab, font = 2))
-#   
-#   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
-#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
-#        axes = FALSE, xlab = "", ylab = "")
-#   text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 1.6, font = 2)
-#   
-#   dev.off()
-#   message("Saved: ", output_file)
-# }
-
-# plot_change_matrix_by_group <- function(group_vector, cluster_char_first, cluster_char_last,
-#                                         ncl, colors, output_file,
-#                                         group_name = "", ncol = 3,
-#                                         width = 20, height = 14, res = 300,
-#                                         panel_label = TRUE, cex_values = 0.7, ...) {
-#   groups <- unique(group_vector)
-#   ng     <- length(groups)
-#   nrw    <- ceiling(ng / ncol)
-#   
-#   tiff(output_file, width = width, height = height, units = "in", res = res, compression = "lzw")
-#   
-#   # Grundcanvas (wie in deinen anderen Plots), danach alle Panels mit new=TRUE
-#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), axes = FALSE, xlab = "", ylab = "")
-#   
-#   cb_left <- 0.90   # rechter Streifen für gemeinsame Colorbar
-#   top     <- 0.94   # oberer Rand (Platz für Haupttitel)
-#   
-#   for (k in seq_len(ng)) {
-#     r <- ceiling(k / ncol)            # Zeile (1 = oben)
-#     c <- ((k - 1) %% ncol) + 1        # Spalte
-#     
-#     x0 <- (c - 1) / ncol * cb_left
-#     x1 <-  c      / ncol * cb_left
-#     y1 <- top - (r - 1) / nrw * top
-#     y0 <- top -  r      / nrw * top
-#     
-#     par(fig = c(x0, x1, y0, y1), new = TRUE)
-#     lakes_oi <- which(group_vector == groups[k])
-#     
-#     draw_change_matrix_panel(
-#       cf = cluster_char_first[lakes_oi, 1],
-#       cl = cluster_char_last[lakes_oi, 1],
-#       ncl = ncl, colors = colors,
-#       show_xlab = (r == nrw),         # nur unterste Zeile
-#       show_ylab = (c == 1),           # nur erste Spalte
-#       cex_values = cex_values, ...
-#     )
-#     
-#     mtext(paste0(if (panel_label) paste0("(", letters[k], ") ") else "",
-#                  groups[k], " (", length(lakes_oi), " lakes)"),
-#           side = 3, line = 0.6, cex = 1.0, font = 2, adj = 0)
-#   }
-#   
-#   # Gemeinsame Colorbar rechts
-#   par(fig = c(cb_left, 1, 0.15, 0.85), new = TRUE, mar = c(2, 1, 2, 4))
-#   fields::image.plot(zlim = c(0, 100), col = colors, legend.only = TRUE, horizontal = FALSE,
-#                      legend.width = 2, legend.mar = 4,
-#                      legend.args = list(text = "Percent [%]",
-#                                         side = 4, line = 2.2, cex = 1.0, font = 2))
-#   
-#   # Haupttitel
-#   par(fig = c(0, 1, 0.95, 1), new = TRUE, mar = c(0, 0, 0, 0))
-#   plot(0, 0, type = "n", xlim = c(0,1), ylim = c(0,1), xaxs = "i", yaxs = "i",
-#        axes = FALSE, xlab = "", ylab = "")
-#   text(0.02, 0.5, group_name, adj = c(0, 0.5), cex = 1.6, font = 2)
-#   
-#   dev.off()
-#   message("Saved: ", output_file)
-# }

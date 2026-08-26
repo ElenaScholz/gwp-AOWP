@@ -1,12 +1,12 @@
 ## === Setup ===
 rm(list = ls())
 renv::activate()
-#setwd("C:/Users/elena/Documents/RProjects/globalLakeVariability")
 source("scripts/utils/helperfunctions.R")
 
 # ---- Configuration ----
 config <- list(
-  ROOT              = "T:/DLR-DFD/PCA-Analysis",
+  # EDIT THIS: set to your local project root
+  ROOT              = "path-to-your-gwpAOWP-folder",
   coord_subfolder   = "Input/00_coordinates_8247",
   ts_subfolder      = "Input/05_timeseries_8247_rm2902",
   coord_suffix      = "_coordinates.txt",

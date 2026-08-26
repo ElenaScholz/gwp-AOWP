@@ -10,15 +10,16 @@ library(fields)
 library(clusterSim)
 
 
-# ---- Configuration ---- 
+# ---- Configuration ----
 config <- list(
-  ROOT = "T:/DLR-DFD/PCA-Analysis",
+  # EDIT THIS: set to your local project root
+  ROOT = "path-to-your-gwpAOWP-folder",
   distance_metric = "euclidean", # or manhattan
   folder_and_files = list(
-    
     input_normalized_lake_mat = "CluDatOutput/CLA_DAT_full.dat",
     folder_for_cnts = "CluDat/cla_runs/kmn_",
-    folder_for_cla = "CluDatOutput/kmns_cla/kmns_cla_", # kmeans 
+    folder_for_cla = "CluDatOutput/kmns_cla/kmns_cla_", # kmeans
+    output_folder_for_plots = "CluDatOutput/plots",
     data_separator = ""
   ),
   kmeans_parameter = list(  # number of iterations within k-means algorithm
@@ -60,23 +61,21 @@ calc_FSIL <- function(mat,cla,cnt){
 }
 
 calc_FSIL_faster <- function(mat, cla, cnt) {
-  # Berechne Distanzmatrix zu allen Clusterzentren
+  # distance matrix to all cluster centers
   d_mat <- sapply(1:ncol(cnt), function(cl) {
     rowMeans(abs(mat - matrix(cnt[,cl], nrow=nrow(mat), ncol=ncol(mat), byrow=TRUE)))
   })
-  
-  # a(i): Distanz zum eigenen Cluster
+
+  # a(i): distance to own cluster
   ais <- d_mat[cbind(1:nrow(mat), cla)]
-  
-  # b(i): Minimale Distanz zu einem anderen Cluster (NICHT dem eigenen)
+
+  # b(i): minimum distance to any other cluster
   bis <- numeric(nrow(mat))
   for(i in 1:nrow(mat)) {
-    # Alle Distanzen außer der zum eigenen Cluster
     other_distances <- d_mat[i, -cla[i]]
     bis[i] <- min(other_distances)
   }
-  
-  # Silhouette-Berechnung
+
   mean((bis - ais) / pmax(ais, bis))
 }
 
@@ -156,7 +155,7 @@ run_kmeans_evaluation <- function(CLA_DAT, k, iter.max, nstart, folder_cnt, fold
   print(head(cluster_assignment))  
   print(dim(cluster_assignment))
   list(
-    cluster_assignments = cluster_assignment, #ACHTUNG - Hier nur der schritt gewählt, weil noch keine echte cluster vorhanden
+    cluster_assignments = cluster_assignment, # NOTE: using the assignments read from file, since no fitted cluster result exists yet at this step
     wss = sum(kmn_res$withinss),
     exvs = kmn_res$betweenss / kmn_res$totss * 100,
     fsil = calc_FSIL_faster(mat=CLA_DAT, cla=cluster_assignment, cnt=cnts),
@@ -186,41 +185,33 @@ run_kmeans_evaluation <- function(CLA_DAT, k, iter.max, nstart, folder_cnt, fold
 #' @examples
 #' kl_scores <- compute_KL(data_matrix, cluster_assignments_matrix)
 compute_KL <- function(CLA_DAT, clas_all) {
-  kl <- rep(NaN, ncol(clas_all))
-  for(i in 3:(ncol(clas_all)-1)) {
-    kl[i] <- index.KL(CLA_DAT, clall=clas_all[,(i-1):(i+1)])
-  }
-  kl
-}
-
-compute_KL <- function(CLA_DAT, clas_all) {
   kl <- rep(NA, ncol(clas_all))
-  
+
   for(i in 3:(ncol(clas_all)-1)) {
     cl_subset <- clas_all[ , (i-1):(i+1)]
-    
-    # Prüfen, ob irgendein Cluster leer oder zu klein ist
+
+    # skip if any cluster is empty or too small
     cluster_sizes <- table(as.vector(cl_subset))
     if(any(cluster_sizes < 2)) {
-      warning(sprintf("KL-Index für Spalte %d übersprungen: mindestens ein Cluster hat <2 Punkte", i))
+      warning(sprintf("KL index skipped for column %d: at least one cluster has <2 points", i))
       kl[i] <- NA
       next
     }
-    
-    # Sicherheits-Wrapper für index.KL
+
+    # safety wrapper around index.KL
     safe_index_KL <- tryCatch(
       {
         index.KL(CLA_DAT, clall = cl_subset)
       },
       error = function(e) {
-        warning(sprintf("Fehler bei KL-Berechnung für Spalte %d: %s", i, e$message))
+        warning(sprintf("Error computing KL index for column %d: %s", i, e$message))
         return(NA)
       }
     )
-    
+
     kl[i] <- safe_index_KL
   }
-  
+
   return(kl)
 }
 
@@ -279,51 +270,45 @@ plot_cluster_metrics_noKL <- function(exvs, fsil, db, filename) {
 
 
 # =========================================
-# Main-Skript
+# Main script
 # =========================================
 cla_dat_path = paste0(config$ROOT,"/", config$folder_and_files$input_normalized_lake_mat)
-CLA_DAT <- load_input_matrix(cla_dat_path
-                             #, sep = ""
-                             )
+CLA_DAT <- load_input_matrix(cla_dat_path)
 
-# Vorbereitung
 results <- vector("list", 15)
 clas_all <- matrix(NaN, nrow=nrow(CLA_DAT), ncol=15)
 
 
 folder_for_cnts = paste0(config$ROOT, "/", config$folder_and_files$folder_for_cnts)
 folder_for_cla = paste0(config$ROOT, "/", config$folder_and_files$folder_for_cla)
-# Schleife über Clusterzahlen
+output_folder_for_plots = paste0(config$ROOT, "/", config$folder_and_files$output_folder_for_plots)
+
+# Loop over number of clusters
 for(k in 2:15){
   cat("Running K =", k, "\n")
   res <- run_kmeans_evaluation(CLA_DAT, k, config$kmeans_parameter$iter.max, config$kmeans_parameter$nstart, folder_for_cnts, folder_for_cla)
   results[[k]] <- res
   clas_all[,k] <- res$cluster_assignments
-  # Debug: Clusterverteilung anzeigen
   print(table(res$cluster_assignments))
 }
 
 
-
-# KL lässt sich aktuell nicht berechnen, da einige cluster nicht besetzt (manhattan)
-# KL Index berechnen
+# KL index cannot currently be computed for the manhattan run, as some clusters are empty
 KL <- compute_KL(CLA_DAT, clas_all[,2:15])
 
-# Erstelle Plots aller Kennzahlen
 # Extract from indices 2 to 15 (skip the NULL at index 1)
 wss <- as.numeric(sapply(results[2:15], `[[`, "wss"))
 exvs <- as.numeric(sapply(results[2:15], `[[`, "exvs"))
 fsil <- as.numeric(sapply(results[2:15], `[[`, "fsil"))
 db <- as.numeric(sapply(results[2:15], `[[`, "db"))
-# Plots speichern
 
-
+# Save plots of all metrics
 if (config$distance_metric == "euclidean"){
-  filename <- paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/plots/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
+  filename <- paste0(output_folder_for_plots, "/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
   plot_cluster_metrics_noKL(exvs, fsil, db,filename)
-  
+
 }else {
-  filename <- paste0("T:/DLR-DFD/PCA-Analysis/CluDatOutput/plots/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
+  filename <- paste0(output_folder_for_plots, "/NCL_analysis_eucl_cla-", config$kmeans_parameter$iter.max, ".pdf")
   plot_cluster_metrics(exvs, fsil, db, KL,filename)}
 
-cat("Alle Berechnungen abgeschlossen. PDF gespeichert:", filename, "\n")
+cat("All calculations completed. PDF saved:", filename, "\n")

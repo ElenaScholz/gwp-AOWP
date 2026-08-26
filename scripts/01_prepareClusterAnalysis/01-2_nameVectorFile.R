@@ -4,8 +4,10 @@ renv::activate()
 source("scripts/utils/helperfunctions.R")  
 
 config <- list(
-  ROOT =  "T:/DLR-DFD/PCA-Analysis/Input/",
-  input_data_folder = "03_timeseries_8247_cor",
+  # EDIT THIS: set to your local project root
+  ROOT = "path-to-your-gwpAOWP-folder/",
+  input_data_folder = "Input/03_timeseries_8247_cor",
+  output_file = "CluDat/complete_name_vec.txt",
   start_year = 2003,
   end_year = 2024
 )
@@ -37,10 +39,7 @@ for (c in 1:length(filepaths)) {
   name_vec <- c(name_vec, name_vec_specific_aoi)
 }
 
-date_vec <- seq(start_year, end_year, by = 1)
-date_vec_rep <- seq(1, nrlines, by = 1)  #<- rep(x = date_vec, times = -> 16 jahre mal anzahl der lakes)
-coord_vec <- seq(1, nrlines, by = 1) # verstehe ich nicht wo der hin soll
-
+date_vec_rep <- seq(1, nrlines, by = 1)  # index repeated across all years and lakes
 
 complete_name_vec <- seq(1, nrlines, by = 1)
 
@@ -53,6 +52,6 @@ complete_name_vec <- as.data.frame(complete_name_vec)
 
 print(paste0("Number of Rows: ", length(complete_name_vec[, 1]), "   Number of Columns: ", length(complete_name_vec[1, ]), "   Number of AOIs: ", length(filepaths)))
 
-write.table(complete_name_vec, file = paste0("T:/DLR-DFD/PCA-Analysis/CluDat/complete_name_vec.txt"), sep = " ", dec = ".", col.names = FALSE, row.names = FALSE)
+write.table(complete_name_vec, file = paste0(ROOT, config$output_file), sep = " ", dec = ".", col.names = FALSE, row.names = FALSE)
 
 

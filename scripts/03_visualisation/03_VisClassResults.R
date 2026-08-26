@@ -15,7 +15,8 @@ library(ggsci)
 source("scripts/utils/helperfunctions.R")
 source("scripts/utils/vis.R")
 config <- list(
-  ROOT = "T:/DLR-DFD/PCA-Analysis/",
+  # EDIT THIS: set to your local project root
+  ROOT = "path-to-your-gwpAOWP-folder/",
   input_datasets = list(
     climate_dataset =  "CluDat/Points_Climate.txt",
     continents_dataset = "CluDat/Points_Cont.txt",
@@ -46,28 +47,12 @@ config <- list(
 )
 
 
-#source(config$path_to_helpers)
-#setwd(config$working_directory)
-
-# 
-# # ---- Define color palette
 library(colorBlindness)
-# 
-# # 10 Basisfarben
-# color_ramp <- pal_flatui("aussie")(10)   # 10 Farben aus der FlatUI-Palette
-# ramp_dev <- colorRamp(color_ramp)
-# if (config$plotting_information$interpolate_colors){
-#   # können interpoliert werden
-#   
-#   lake_cols <- rgb(ramp_dev(seq(0, 1, length.out = ncl)), max = 255)  
-# } else{
-#   lake_cols <- color_ramp
-# }
 
 # ---- Reading Data ----
 normalized_lake_dat <- load_input_matrix(
-  path = paste0(config$ROOT, "/", config$input_datasets$normalized_laked_data), 
-  sep = config$input_datasets$seperator
+  path = paste0(config$ROOT, "/", config$input_datasets$normalized_laked_data),
+  sep = config$input_datasets$sep
 )
 
 climate = read.delim(
@@ -532,13 +517,12 @@ text(0.03, 0.52, change_subtitle,
      adj=c(0,0.5), cex=2.0, font=1, col="grey25")
 
 
-# 
-# Karte
+# Map
 pos_map <- c(0, 1, 0.47, 0.90)
 plot_world_map_rob(coords = coords_all,
                    cluster_vals = cluster_vals_all,
                    lake_cols = map_cols,
-                   year_label = "",                     # kein Legendentitel
+                   year_label = "",                     # no legend title
                    number_of_cluster = length(custom_legend$labels),
                    custom_legend = custom_legend,
                    position = pos_map,
@@ -551,15 +535,7 @@ par(fig=c(0,1,0.42,0.46), new=TRUE, mar=c(0,0,0,0))
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, xlab="", ylab="")
 text(0.03, 0.5, "(b) Global transition matrix", adj=c(0,0.5), cex=2.25, font=2)
 
-# par(fig=c(0.3, 0.70, 0.00, 0.42), new=TRUE)
-# plot_change_matrix(
-#   cluster_char_first = lake_frequencies$cluster_char_first,
-#   cluster_char_last  = lake_frequencies$cluster_char_last,
-#   ncl = ncl, colors = matrix_cols,
-#   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-#   cex_values = 1.8, cex_lab = 1.8, cex_axis = 1.8, mar = c(10, 4.8, 1,1), legend_mar = 8
-# )
-# Matrix — Breite so berechnet, dass die Box quadratisch wird
+# Matrix width calculated so the box stays square
 csi <- par("csi"); W <- 25; H <- config$plotting_information$pdf_size$height_large
 m <- c(10, 4.8, 1, 1); fig_h <- 0.42
 
@@ -607,27 +583,12 @@ plot_world_map_rob(coords = coords_all,
                    white_world = TRUE)
 dev.off()
 
-# tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_MATRIX.tiff"),
-#      width=12, height=12, units = "in", res = 300, compression = "lzw")
-# 
-# plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
-# par(fig=c(0.08, 0.92, 0.06, 0.94), new=TRUE)   # Matrix füllt nicht das ganze Blatt
-# 
-# plot_change_matrix(
-#   cluster_char_first = lake_frequencies$cluster_char_first,
-#   cluster_char_last  = lake_frequencies$cluster_char_last,
-#   ncl = ncl, colors = matrix_cols,
-#   normalize = "row", include_diagonal = TRUE, percent_on_top = TRUE,
-#   cex_values = 1.3, cex_lab = 1.5, cex_axis = 1.5,
-#   mar = c(9, 6, 1, 1), legend_mar = 1
-# )
-# dev.off()
 tiff(paste0(config$ROOT, "/", config$output_directories$for_plots,"/03.3_NL_white_Class_change_target_MATRIX.tiff"),
      width=12, height=12, units = "in", res = 300, compression = "lzw")
 
 plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), axes=FALSE, xlab="", ylab="")
 
-# Breite so berechnet, dass die Box quadratisch wird
+# width calculated so the box stays square
 csi <- par("csi"); W <- 12; H <- 12
 m <- c(11, 6, 1, 1); fig_b <- 0.06; fig_t <- 0.94
 
@@ -649,8 +610,6 @@ dev.off()
 
 source("scripts/utils/vis.R")
 
-# Palette wie gehabt (ggf. deine aufgehellte Variante hier einsetzen)
-
 # ---- Transition matrices per climate zone ----
 plot_change_matrix_by_group(
   group_vector       = climate$description_of_zone,
@@ -663,10 +622,10 @@ plot_change_matrix_by_group(
                               "/03.4_NL_ChangeMatrix_ClimateZones.tiff"),
   height = 17,
   width = 21,
-  cb_bottom          = 0.08,      # schmaler Streifen unten (NICHT 0.8)
+  cb_bottom          = 0.08,      # narrow strip at the bottom (NOT 0.8)
   panel_mar = c(3.5, 4.0, 3.0, 0.5),
-  legend_width       = 4,       # Dicke der Bar (NICHT 10)
-  legend_mar         = 3,         # Abstand nach unten (NICHT 10)
+  legend_width       = 4,       # thickness of the bar (NOT 10)
+  legend_mar         = 3,         # spacing below (NOT 10)
   ncol               = 3,
   cex_values         = 1.3,
   cex_lab            = 1.5,
@@ -685,10 +644,10 @@ plot_change_matrix_by_group(
   output_file        = paste0(config$ROOT, "/", config$output_directories$for_plots,
                               "/03.4_NL_ChangeMatrix_Continents.tiff"),
   height = 16,
-  cb_bottom          = 0.08,      # schmaler Streifen unten (NICHT 0.8)
+  cb_bottom          = 0.08,      # narrow strip at the bottom (NOT 0.8)
   panel_mar = c(3.5, 4.0, 3.0, 0.5),
-  legend_width       = 4,       # Dicke der Bar (NICHT 10)
-  legend_mar         = 3,         # Abstand nach unten (NICHT 10)
+  legend_width       = 4,       # thickness of the bar (NOT 10)
+  legend_mar         = 3,         # spacing below (NOT 10)
   ncol               = 3,
   cex_values         = 1.3,
   cex_lab            = 1.5,

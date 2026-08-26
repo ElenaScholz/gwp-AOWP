@@ -9,12 +9,17 @@ source('scripts/utils/helperfunctions.R')  # read_data() & save_datasets()
 
 # ---- Configuration ----
 config <- list(
-  input_folder   = "T:/DLR-DFD/PCA-Analysis/Input/04_timeseries_8247_allDates/",
-  output_folder  = "T:/DLR-DFD/PCA-Analysis/Input/05_timeseries_8247_rm2902",
+  # EDIT THIS: set to your local project root
+  ROOT           = "path-to-your-gwpAOWP-folder/",
+  input_folder   = "Input/04_timeseries_8247_allDates/",
+  output_folder  = "Input/05_timeseries_8247_rm2902",
   output_suffix  = "_rm2902",
   csv_sep        = ";",
   file_format    = "txt"
 )
+
+config$input_folder  <- paste0(config$ROOT, config$input_folder)
+config$output_folder <- paste0(config$ROOT, config$output_folder)
 
 # ---- Functions ----
 

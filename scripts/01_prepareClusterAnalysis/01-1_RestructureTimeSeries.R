@@ -47,7 +47,8 @@ source("scripts/utils/helperfunctions.R")
 # ---- Configuration ----
 # Central config list — adjust paths and patterns here before running.
 config <- list(
-  ROOT              = "T:/DLR-DFD/PCA-Analysis/",
+  # EDIT THIS: set to your local project root
+  ROOT              = "path-to-your-gwpAOWP-folder/",
   ts_subfolder      = "input/05_timeseries_8247_rm2902/",
   ts_suffix_pattern = "_SGV-timeseries_allDates_rm2902\\.txt$", # used to extract prefix_id
   output_folder     = "CluDat",
