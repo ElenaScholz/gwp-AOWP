@@ -1,8 +1,7 @@
 # gwp-AOWP
-Analysis pipeline for classifying the seasonal dynamics of global water bodies
-(Annual Open-Water Patterns, AOWPs) from the (German Aerospeace Center/DLR Global WaterPack (GWP) time
-series, using k-means cluster analysis.
 
+This repository is part of the Manuscript "Global Annual Open-Surface-Water Patterns reveal persistence and change in seasonal inland-water dynamics".
+It contains the main processing steps to derieve the Annual Open-Surface-Water Pattern.
 # Folder Structure
 
 ```
