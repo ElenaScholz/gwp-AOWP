@@ -348,11 +348,11 @@ figure functions.
 Older auxiliary functions from the original TIMESAT-based seasonality
 workflow (pre-/post-processing for TIMESAT, field-vs-remote-sensing
 comparison plots). Only `AddRowVal()` is used by the current pipeline
-
+(in `00-1_RemoveDuplicates.R`); the rest is retained for reference to earlier
+analysis steps not part of this repository's pipeline.
 
 # License
-This project is licensed under the [CC-BY-4.0](https://spdx.org/licenses/CC-BY-4.0
-) License — see LICENSE for details.
+This project is licensed under the [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) License — see [LICENSE](LICENSE) for details.
 
 (in `00-1_RemoveDuplicates.R`); the rest is retained for reference to earlier
 analysis steps not part of this repository's pipeline.
